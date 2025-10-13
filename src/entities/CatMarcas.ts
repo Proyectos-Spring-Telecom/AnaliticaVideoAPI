@@ -6,10 +6,10 @@ import {
     UpdateDateColumn,
     ManyToOne,
     JoinColumn,
+    OneToMany,
   } from 'typeorm';
 import { CatProducto } from './CatProducto';
 import { CatModelos } from './CatModelos';
-import { OneToMany } from 'typeorm/browser';
   
   @Entity('CatMarcas')
   export class CatMarca {
