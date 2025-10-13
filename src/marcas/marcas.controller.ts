@@ -1,15 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { MarcasService } from './marcas.service';
-import { CreateMarcaDto } from './dto/create-marca.dto';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
+import { CreateCatMarcaDto } from './dto/create-marca.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('marcas')
 export class MarcasController {
   constructor(private readonly marcasService: MarcasService) {}
 
   @Post()
-  create(@Body() createMarcaDto: CreateMarcaDto) {
+  create(@Body() createMarcaDto: CreateCatMarcaDto) {
     return this.marcasService.create(createMarcaDto);
   }
 

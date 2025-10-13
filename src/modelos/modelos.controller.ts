@@ -1,15 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ModelosService } from './modelos.service';
-import { CreateModeloDto } from './dto/create-modelo.dto';
 import { UpdateModeloDto } from './dto/update-modelo.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
+import { CreateCatModelosDto } from './dto/create-modelo.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('modelos')
 export class ModelosController {
   constructor(private readonly modelosService: ModelosService) {}
 
   @Post()
-  create(@Body() createModeloDto: CreateModeloDto) {
+  create(@Body() createModeloDto: CreateCatModelosDto) {
     return this.modelosService.create(createModeloDto);
   }
 

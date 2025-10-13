@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { ModelosModule } from './modelos/modelos.module';
 import { EquiposModule } from './equipos/equipos.module';
 import { MailServiceService } from './mail-service/mail-service.service';
+import { CatProductosModule } from './cat-productos/cat-productos.module';
 import Joi from 'joi';
 
 @Module({
@@ -65,7 +66,8 @@ import Joi from 'joi';
     AuthModule,
 
     BitacoraModule,
-    EquiposModule],
+    EquiposModule,
+    CatProductosModule],
   controllers: [AppController],
   providers: [MailServiceService],
 })
