@@ -12,6 +12,7 @@ import { BitacoraModule } from './bitacora/bitacora.module';
 import { AuthModule } from './auth/auth.module';
 import { ModelosModule } from './modelos/modelos.module';
 import { DispositivosModule } from './dispositivos/dispositivos.module';
+import { EquiposModule } from './equipos/equipos.module';
 import Joi from 'joi';
 
 @Module({
@@ -65,7 +66,9 @@ import Joi from 'joi';
 
     BitacoraModule,
 
-    DispositivosModule],
+    DispositivosModule,
+
+    EquiposModule],
   controllers: [AppController],
   providers: [],
 })
