@@ -3,7 +3,7 @@ import { CatProductosService } from './cat-productos.service';
 import { CreateCatProductoDto } from './dto/create-cat-producto.dto';
 import { UpdateCatProductoDto } from './dto/update-cat-producto.dto';
 
-@Controller('cat-productos')
+@Controller('catProductos')
 export class CatProductosController {
   constructor(private readonly catProductosService: CatProductosService) {}
 
