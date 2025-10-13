@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateMarcaDto } from './dto/create-marca.dto';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
+import { CreateCatMarcaDto } from './dto/create-marca.dto';
 
 @Injectable()
 export class MarcasService {
-  create(createMarcaDto: CreateMarcaDto) {
+  create(createMarcaDto: CreateCatMarcaDto) {
     return 'This action adds a new marca';
   }
 

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateModeloDto } from './dto/create-modelo.dto';
+import { CreateCatModelosDto } from './dto/create-modelo.dto';
 import { UpdateModeloDto } from './dto/update-modelo.dto';
 
 @Injectable()
 export class ModelosService {
-  create(createModeloDto: CreateModeloDto) {
+  create(createModeloDto: CreateCatModelosDto) {
     return 'This action adds a new modelo';
   }
 
