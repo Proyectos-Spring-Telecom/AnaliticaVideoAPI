@@ -10,6 +10,7 @@ import {
 
 import { Usuarios } from "./Usuarios";
 import { applySchema } from "src/utils/schema";
+import { Equipos } from "./Equipos";
 
 
 @Index("UQ_Clientes_RFC", ["rfc"], { unique: true })
@@ -129,5 +130,7 @@ export class Clientes {
 
   @OneToMany(() => Usuarios, (usuarios) => usuarios.idCliente2)
   usuarios: Usuarios[];
+  @OneToMany(() => Equipos, (equipo) => equipo.cliente)
+  equipos: Equipos[];
 
 }
