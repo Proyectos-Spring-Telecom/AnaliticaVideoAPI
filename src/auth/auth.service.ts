@@ -73,4 +73,13 @@ export class AuthService {
             throw new InternalServerErrorException(error);
         }
     }
+
+    async generateToken(user: { id: number; email: string }) {
+        const payload = { id: user.id, email: user.email };
+        const token = this.jwtService.sign(payload, {
+          secret: process.env.JWT_SECRET,
+          expiresIn: (process.env.JWT_CONFIRMACION || '1h') as any,
+        });
+        return token;
+      }
 }

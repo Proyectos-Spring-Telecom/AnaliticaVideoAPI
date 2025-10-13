@@ -12,6 +12,7 @@ import { BitacoraModule } from './bitacora/bitacora.module';
 import { AuthModule } from './auth/auth.module';
 import { ModelosModule } from './modelos/modelos.module';
 import { EquiposModule } from './equipos/equipos.module';
+import { MailServiceService } from './mail-service/mail-service.service';
 import Joi from 'joi';
 
 @Module({
@@ -66,6 +67,6 @@ import Joi from 'joi';
     BitacoraModule,
     EquiposModule],
   controllers: [AppController],
-  providers: [],
+  providers: [MailServiceService],
 })
 export class AppModule {}
