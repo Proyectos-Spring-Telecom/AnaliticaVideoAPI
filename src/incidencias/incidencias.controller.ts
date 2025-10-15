@@ -10,10 +10,8 @@ export class IncidenciasController {
   @Post()
   async create(
     @Body() createIncidenciaDto: CreateIncidenciaDto,
-    @Req() req,
   ){
-    const idUser = req.user.userId;
-    return await this.incidenciasService.create(createIncidenciaDto, idUser);
+    return await this.incidenciasService.create(createIncidenciaDto, 1);
   }
   
 }
