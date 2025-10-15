@@ -97,6 +97,7 @@ export class CatProductosService {
   async findOne(id: number) {
     try {
       const data = await this.productoRepository.findOne({ where: { id: id } });
+      if(!data) throw new NotFoundException("Producto no encontrado")
       return data;
     } catch (error) {
       throw new BadRequestException(error);

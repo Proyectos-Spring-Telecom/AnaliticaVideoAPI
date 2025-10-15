@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
 import { MarcasService } from './marcas.service';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
@@ -18,18 +18,24 @@ export class MarcasController {
     return this.marcasService.findAll();
   }
 
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.marcasService.findOne(+id);
   }
+  @Get(':page/:limit')
+  findAllPaginated(@Param('page', ParseIntPipe) page: number,
+  @Param('limit', ParseIntPipe) limit: number) {
+    return this.marcasService.findAllPaginated(page,limit);
+  }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMarcaDto: UpdateMarcaDto) {
-    return this.marcasService.update(+id, updateMarcaDto);
+  update(@Param('id') id: string, @Body() updateMarcaDto: UpdateMarcaDto, @Req() req) {
+    return this.marcasService.update(+id, updateMarcaDto,req.user.id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.marcasService.remove(+id);
+  remove(@Param('id') id: string, @Req() req) {
+    return this.marcasService.remove(+id, req.user.id);
   }
 }
