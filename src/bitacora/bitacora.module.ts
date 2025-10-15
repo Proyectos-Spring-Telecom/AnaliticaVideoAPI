@@ -6,7 +6,7 @@ import { Bitacora } from 'src/entities/Bitacora';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Bitacora])],
-  controllers: [BitacoraController],
   providers: [BitacoraService],
+  exports: [BitacoraService], 
 })
 export class BitacoraModule {}

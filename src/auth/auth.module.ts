@@ -5,26 +5,28 @@ import { UsuariosPermisos } from 'src/entities/UsuariosPermisos';
 import { Usuarios } from 'src/entities/Usuarios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+import { BitacoraModule } from 'src/bitacora/bitacora.module';
+import { BitacoraService } from 'src/bitacora/bitacora.service';
+
 
 @Module({
-  imports: [
+  imports:[
+    
+    BitacoraModule,
     ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService): Promise<any> => ({
-        secret: config.get<string>('JWT_SECRET') || 'super_secret_key',
-        signOptions: {
-          expiresIn: config.get<string>('JWT_EXPIRES_IN') || '1d',
-        },
-      }),
+      imports:[ConfigModule],
+      inject:[ConfigService],
+      useFactory:(config: ConfigService)=>({
+        secret: config.get<string>('JWT_SECRET'),
+        signOptions: {expiresIn: config.get<string>('JWT_EXPIRES_IN') as any}
+      })
     }),
-        TypeOrmModule.forFeature([Usuarios,UsuariosPermisos])
-  ],
+    TypeOrmModule.forFeature([Usuarios,UsuariosPermisos]),],
   controllers: [AuthController],
-  providers: [AuthService,JwtStrategy],
-  exports:[JwtModule]
+  providers: [AuthService,JwtStrategy,BitacoraModule],
+  exports: [JwtModule]
 })
 export class AuthModule {}
