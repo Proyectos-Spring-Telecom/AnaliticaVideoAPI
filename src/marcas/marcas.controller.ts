@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { MarcasService } from './marcas.service';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
@@ -9,8 +9,8 @@ export class MarcasController {
   constructor(private readonly marcasService: MarcasService) {}
 
   @Post()
-  create(@Body() createMarcaDto: CreateCatMarcaDto) {
-    return this.marcasService.create(createMarcaDto);
+  create(@Body() createMarcaDto: CreateCatMarcaDto, @Req() req) {
+    return this.marcasService.create(createMarcaDto,req);
   }
 
   @Get()

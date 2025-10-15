@@ -15,6 +15,7 @@ import { CatModelos } from './CatModelos';
   export class CatProducto {
     @PrimaryGeneratedColumn({ name: 'Id', comment: 'Primary Key' })
     id: number;
+
   
     @CreateDateColumn({
       name: 'FechaCreacion',
@@ -41,6 +42,15 @@ import { CatModelos } from './CatModelos';
       comment: 'Nombre del producto',
     })
     nombre: string;
+
+    @Column({
+      name: 'Estatus',
+      type: 'varchar',
+      length: 255,
+      nullable: false,
+      comment: 'Estatus del producto',
+    })
+    estatus: number;
 
   @OneToMany(() => CatMarca, (marca) => marca.producto)
   marcas: CatMarca[];
