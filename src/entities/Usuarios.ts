@@ -59,8 +59,6 @@ export class Usuarios {
   @Column("datetime", { name: "ActualizacionPin", nullable: true })
   actualizacionPin: string | null;
 
-  @Column("varchar", { name: "DispositivoId", nullable: true, length: 100 })
-  dispositivoId: string | null;
 
   @Column("varchar", { name: "FotoPerfil", nullable: true, length: 500 })
   fotoPerfil: string | null;
@@ -94,8 +92,7 @@ export class Usuarios {
   })
   @JoinColumn([{ name: "IdCliente", referencedColumnName: "id" }])
   idCliente2: Clientes | null;
-  @JoinColumn([{ name: "IdRol", referencedColumnName: "id" }])
-  idRol2: Roles;
+
 
   @ManyToOne(() => Roles, (roles) => roles.usuarios, {
     onDelete: "NO ACTION",
@@ -111,8 +108,10 @@ export class Usuarios {
   @OneToMany(() => Bitacora, (bitacora) => bitacora.idUsuario2)
   bitacoras: Bitacora[];
 
-
-
-
-
+  @ManyToOne(() => Roles, (roles) => roles.usuarios, {
+    onDelete: "NO ACTION",
+    onUpdate: "NO ACTION",
+  })
+  @JoinColumn([{ name: "IdRol", referencedColumnName: "id" }])
+  idRol2: Roles;
 }

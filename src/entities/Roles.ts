@@ -36,6 +36,6 @@ export class Roles {
   @Column("tinyint", { name: "Estatus", default: () => "'1'" })
   estatus: number;
 
-  @OneToMany(() => Usuarios, (usuarios) => usuarios.idRol2)
+  @OneToMany(() => Usuarios, (usuarios) => usuarios.idRol)
   usuarios: Usuarios[];
 }

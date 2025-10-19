@@ -62,11 +62,12 @@ export class AuthService {
                 fechaCreacion: `${user.fechaCreacion}`,
                 fotoPerfil: `${user.fotoPerfil}`,
                 userName: `${user.userName}`,
-                rol: user.idRol2,
+                rol: user.idRol,
                 token: this.jwtService.sign(payload),
                 permisos: permisos,
             };
         } catch (error) {
+            console.log(error)
             if (error instanceof HttpException) {
                 throw error;
             }
