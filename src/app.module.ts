@@ -20,37 +20,37 @@ import { InstalacionEquipoModule } from './instalacion-equipo/instalacion-equipo
 import Joi from 'joi';
 
 @Module({
-  imports: [ ConfigModule.forRoot({
-      isGlobal: true,
-      validationSchema: Joi.object({
-        DB_HOST: Joi.string().required(),
-        DB_PORT: Joi.number().default(3306),
-        DB_USER: Joi.string().required(),
-        DB_PASSWORD: Joi.string().allow(''), 
-        DB_DATABASE: Joi.string().required(),
-        JWT_SECRET: Joi.string().required(),
-        JWT_EXPIRES_IN: Joi.string().required(),
-  
-      }),
+  imports: [ConfigModule.forRoot({
+    isGlobal: true,
+    validationSchema: Joi.object({
+      DB_HOST: Joi.string().required(),
+      DB_PORT: Joi.number().default(3306),
+      DB_USER: Joi.string().required(),
+      DB_PASSWORD: Joi.string().allow(''),
+      DB_DATABASE: Joi.string().required(),
+      JWT_SECRET: Joi.string().required(),
+      JWT_EXPIRES_IN: Joi.string().required(),
+      DB_TZ: Joi.string().default('-06:00'),
     }),
+  }),
 
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'mysql',
-        host: config.get<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get<string>('DB_USER'),
-        password: config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_DATABASE'),
-        autoLoadEntities: false,
-        entities: [__dirname + '/entities/*{.ts,.js}'],
-        synchronize: false, //Nunca poner en true 
-        dateStrings: false,
-        timezone: 'Z'
-      }),
+  TypeOrmModule.forRootAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: (config: ConfigService) => ({
+      type: 'mysql',
+      host: config.get<string>('DB_HOST'),
+      port: config.get<number>('DB_PORT'),
+      username: config.get<string>('DB_USER'),
+      password: config.get<string>('DB_PASSWORD'),
+      database: config.get<string>('DB_DATABASE'),
+      autoLoadEntities: false,
+      entities: [__dirname + '/entities/*{.ts,.js}'],
+      synchronize: false, //Nunca poner en true 
+      dateStrings: false,
+      timezone: config.get<string>('DB_TZ') || '-06:00'
     }),
+  }),
 
     UsuariosModule,
 
@@ -77,4 +77,4 @@ import Joi from 'joi';
   controllers: [AppController],
   providers: [MailServiceService],
 })
-export class AppModule {}
+export class AppModule { }
