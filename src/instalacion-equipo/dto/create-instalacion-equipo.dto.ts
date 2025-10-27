@@ -21,4 +21,9 @@ export class CreateInstalacionEquipoDto {
         example: '123456',
     })
     idCliente?: string;
+        @ApiProperty({
+        description: 'ID de la instalacion central',
+        example: '123456',
+    })
+    idSedeCentral?: string;
 }
