@@ -15,6 +15,8 @@ import { EquiposModule } from './equipos/equipos.module';
 import { MailServiceService } from './mail-service/mail-service.service';
 import { CatProductosModule } from './cat-productos/cat-productos.module';
 import { IncidenciasModule } from './incidencias/incidencias.module';
+import { InstalacionCentralModule } from './instalacion-central/instalacion-central.module';
+import { InstalacionEquipoModule } from './instalacion-equipo/instalacion-equipo.module';
 import Joi from 'joi';
 
 @Module({
@@ -69,7 +71,9 @@ import Joi from 'joi';
     BitacoraModule,
     EquiposModule,
     CatProductosModule,
-    IncidenciasModule],
+    IncidenciasModule,
+    InstalacionCentralModule,
+    InstalacionEquipoModule],
   controllers: [AppController],
   providers: [MailServiceService],
 })

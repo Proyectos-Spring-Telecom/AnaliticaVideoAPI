@@ -6,9 +6,11 @@ import {
     UpdateDateColumn,
     ManyToOne,
     JoinColumn,
+    OneToMany,
   } from 'typeorm';
   import { CatModelos } from './CatModelos';
 import { Clientes } from './Clientes';
+import { InstalacionEquipo } from './InstalacionEquipo';
   
   @Entity('Equipos')
   export class Equipos {
@@ -93,5 +95,8 @@ import { Clientes } from './Clientes';
   })
   @JoinColumn({ name: 'IdCliente' })
   cliente: Clientes;
+
+    @OneToMany(() => InstalacionEquipo, (instalacion) => instalacion.equipo)
+  instalacionesEquipo: InstalacionEquipo[];
   }
   
