@@ -41,7 +41,7 @@ export class ModulosService {
             'CREATE',
             querylogger,
             idUser,
-            5,
+            saved.id,
             EstatusEnumBitcora.SUCCESS,
           );
     
@@ -65,7 +65,7 @@ export class ModulosService {
             'CREATE',
             querylogger,
             idUser,
-            5,
+            0,
             EstatusEnumBitcora.ERROR,
             error.message,
           );
@@ -146,7 +146,7 @@ export class ModulosService {
             'UPDATE',
             querylogger,
             idUser,
-            5,
+            id,
             EstatusEnumBitcora.SUCCESS,
           );
     
@@ -169,7 +169,7 @@ export class ModulosService {
             'UPDATE',
             querylogger,
             idUser,
-            5,
+            id,
             EstatusEnumBitcora.ERROR,
             error.message,
           );
@@ -198,7 +198,7 @@ export class ModulosService {
             'UPDATE',
             querylogger,
             idUser,
-            5,
+            id,
             EstatusEnumBitcora.SUCCESS,
           );
     
@@ -222,7 +222,7 @@ export class ModulosService {
             'UPDATE',
             querylogger,
             idUser,
-            5,
+            id,
             EstatusEnumBitcora.ERROR,
             error.message,
           );
@@ -276,7 +276,7 @@ export class ModulosService {
             'UPDATE',
             querylogger,
             Number(idUser),
-            5,
+            id,
             EstatusEnumBitcora.SUCCESS,
           );
           
@@ -299,7 +299,7 @@ export class ModulosService {
             'UPDATE',
             querylogger,
             Number(idUser),
-            5,
+            id,
             EstatusEnumBitcora.ERROR,
             error.message,
           );

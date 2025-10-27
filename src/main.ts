@@ -30,6 +30,7 @@ async function bootstrap() {
     },
   });
 
+  app.setGlobalPrefix('api'); // prefijo global para todas las rutas
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

@@ -103,7 +103,7 @@ export class PermisosService {
             'CREATE',
             querylogger,
             Number(idUsuario),
-            4,
+            savedPermiso.id,
             EstatusEnumBitcora.SUCCESS,
           );
     
@@ -127,7 +127,7 @@ export class PermisosService {
             'CREATE',
             querylogger,
             Number(idUsuario),
-            4,
+            0,
             EstatusEnumBitcora.ERROR,
             error.message,
           );
@@ -162,7 +162,7 @@ export class PermisosService {
             'UPDATE',
             querylogger,
             idUser,
-            4,
+            id,
             EstatusEnumBitcora.SUCCESS,
           );
     
@@ -186,7 +186,7 @@ export class PermisosService {
             'UPDATE',
             querylogger,
             idUser,
-            4,
+            0,
             EstatusEnumBitcora.ERROR,
             error.message,
           );
@@ -223,7 +223,7 @@ export class PermisosService {
             'UPDATE',
             querylogger,
             idUser,
-            4,
+            id,
             EstatusEnumBitcora.SUCCESS,
           );
     
@@ -247,7 +247,7 @@ export class PermisosService {
             'UPDATE',
             querylogger,
             idUser,
-            4,
+            0,
             EstatusEnumBitcora.ERROR,
             error.message,
           );
@@ -272,7 +272,7 @@ export class PermisosService {
             'UPDATE',
             querylogger,
             idUser,
-            4,
+            id,
             EstatusEnumBitcora.SUCCESS,
           );
     
@@ -295,7 +295,7 @@ export class PermisosService {
             'UPDATE',
             querylogger,
             idUser,
-            4,
+            0,
             EstatusEnumBitcora.ERROR,
             error.message,
           );
