@@ -4,8 +4,10 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from "typeorm";
 import { Clientes } from "./Clientes";
+import { InstalacionEquipo } from "./InstalacionEquipo";
 
 @Entity({ name: "InstalacionCentral" })
 export class InstalacionCentral {
@@ -26,4 +28,7 @@ export class InstalacionCentral {
 
   @Column({ type: "double", name: "Lng" })
   lng: number;
+
+    @OneToMany(() => InstalacionEquipo, (instalacionEquipo) => instalacionEquipo.instalacionCentral)
+  instalaciones: InstalacionEquipo[];
 }

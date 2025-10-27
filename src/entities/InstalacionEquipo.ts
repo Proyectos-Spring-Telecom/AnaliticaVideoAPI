@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { Clientes } from "./Clientes";
 import { Equipos } from "./Equipos";
+import { InstalacionCentral } from "./InstalacionCentral";
 // Asegúrate de tener esta entidad
 
 @Entity({ name: "InstalacionEquipo" })
@@ -41,4 +42,8 @@ export class InstalacionEquipo {
   @ManyToOne(() => Clientes, (cliente) => cliente.instalacionesEquipo, { nullable: true })
   @JoinColumn({ name: "IdCliente", referencedColumnName: "id" })
   cliente: Clientes;
+
+    @ManyToOne(() => InstalacionCentral, (instalacionCentral) => instalacionCentral.instalaciones, { nullable: true })
+  @JoinColumn({ name: "IdSedeCentral", referencedColumnName: "id" })
+  instalacionCentral: InstalacionCentral;
 }
