@@ -6,14 +6,20 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-    app.useGlobalPipes(
+  app.enableCors({
+    origin: '*', // Permitir todas las URLs; puedes poner un array de URLs específicas
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // elimina propiedades no definidas en el DTO
       forbidNonWhitelisted: true, // lanza error si se envían propiedades extra
       transform: true, // transforma los tipos automáticamente (según DTO)
     }),
   );
-  
+
   const config = new DocumentBuilder()
     .setTitle('Video Analítica')
     .setDescription('Documentación automática de la API de NestJS')
@@ -26,7 +32,7 @@ async function bootstrap() {
   // 📄 Ruta donde estará disponible Swagger UI
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
-      persistAuthorization: true, 
+      persistAuthorization: true,
     },
   });
 
