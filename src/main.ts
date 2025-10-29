@@ -24,7 +24,8 @@ async function bootstrap() {
     .setTitle('Video Analítica')
     .setDescription('Documentación automática de la API de NestJS')
     .setVersion('1.0.0')
-    .addBearerAuth() // 🔐 agrega JWT Auth si la usarás
+    .addBearerAuth()
+    .addServer('api')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
