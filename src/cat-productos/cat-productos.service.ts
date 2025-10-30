@@ -41,7 +41,7 @@ export class CatProductosService {
         `Producto creado correctamente con nombre: ${saved.nombre}.`,
         "CREATE",
         querylogger,
-        req.user.id,
+        req.user.userId,
         1,
         EstatusEnumBitcora.SUCCESS
       );
@@ -127,7 +127,7 @@ export class CatProductosService {
         `Producto actualizado correctamente con nombre: ${updateCatProductoDto.nombre}.`,
         "CREATE",
         querylogger,
-        req.user.id,
+        req.user.userId,
         1,
         EstatusEnumBitcora.SUCCESS
       );

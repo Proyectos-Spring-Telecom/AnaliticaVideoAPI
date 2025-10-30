@@ -44,7 +44,7 @@ export class MarcasService {
         `Marca creada correctamente con nombre: ${saved.nombre}.`,
         "CREATE",
         querylogger,
-        req.user.id,
+        req.user.userId,
         1,
         EstatusEnumBitcora.SUCCESS
       );

@@ -20,6 +20,12 @@ async function bootstrap() {
     }),
   );
 
+  app.getHttpAdapter().get('/api/docs-json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(document);
+});
+
+
   const config = new DocumentBuilder()
     .setTitle('Video Analítica')
     .setDescription('Documentación automática de la API de NestJS')

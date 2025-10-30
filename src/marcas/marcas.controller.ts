@@ -33,11 +33,11 @@ export class MarcasController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMarcaDto: UpdateMarcaDto, @Req() req) {
-    return this.marcasService.update(+id, updateMarcaDto,req.user.id);
+    return this.marcasService.update(+id, updateMarcaDto,req.user.userId);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req) {
-    return this.marcasService.remove(+id, req.user.id);
+    return this.marcasService.remove(+id, req.user.userId);
   }
 }

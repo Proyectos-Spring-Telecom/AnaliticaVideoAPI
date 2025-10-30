@@ -12,7 +12,7 @@ export class ModelosController {
 
   @Post()
   create(@Body() createModeloDto: CreateCatModelosDto,@Req() req) {
-    return this.modelosService.create(createModeloDto,req.user.id);
+    return this.modelosService.create(createModeloDto,req.user.userId);
   }
 
   @Get()
@@ -27,11 +27,11 @@ export class ModelosController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateModeloDto: UpdateModeloDto, @Req() req) {
-    return this.modelosService.update(+id, updateModeloDto, req.user.id);
+    return this.modelosService.update(+id, updateModeloDto, req.user.userId);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req) {
-    return this.modelosService.remove(+id, req.user.id);
+    return this.modelosService.remove(+id, req.user.userId);
   }
 }
