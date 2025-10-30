@@ -12,22 +12,24 @@ import { InstalacionEquipo } from "./InstalacionEquipo";
 @Entity({ name: "InstalacionCentral" })
 export class InstalacionCentral {
   @PrimaryGeneratedColumn({ type: "bigint" })
-  id: string;  // bigint en MySQL mapea a string en TS para evitar overflow
+  id: number;
 
   @Column({ type: "bigint", name: "IdCliente" })
-  idCliente: string;
+  idCliente: number;
 
-  @ManyToOne(() => Clientes, (cliente) => cliente.instalaciones, {
-    onDelete: "RESTRICT",  // o el comportamiento que necesites
-  })
-  @JoinColumn({ name: "IdCliente", referencedColumnName: "id" })
-  cliente: Clientes;
-
-  @Column({ type: "double", name: "Lat" })
+    @Column({ type: "double", name: "Lat" })
   lat: number;
 
   @Column({ type: "double", name: "Lng" })
   lng: number;
+
+  @ManyToOne(() => Clientes, (cliente) => cliente.instalaciones, {
+    onDelete: "RESTRICT",  
+  })
+  @JoinColumn({ name: "IdCliente", referencedColumnName: "id" })
+  cliente: Clientes;
+
+
 
     @OneToMany(() => InstalacionEquipo, (instalacionEquipo) => instalacionEquipo.instalacionCentral)
   instalaciones: InstalacionEquipo[];

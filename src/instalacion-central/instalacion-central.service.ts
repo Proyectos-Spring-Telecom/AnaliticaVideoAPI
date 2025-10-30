@@ -1,11 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { CreateInstalacionCentralDto } from './dto/create-instalacion-central.dto';
 import { UpdateInstalacionCentralDto } from './dto/update-instalacion-central.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { InstalacionCentral } from 'src/entities/InstalacionCentral';
+import { Repository } from 'typeorm';
+import { BitacoraService } from 'src/bitacora/bitacora.service';
+import { EstatusEnumBitcora } from 'src/common/ApiResponse';
 
 @Injectable()
 export class InstalacionCentralService {
-  create(createInstalacionCentralDto: CreateInstalacionCentralDto) {
-    return 'This action adds a new instalacionCentral';
+  constructor(@InjectRepository(InstalacionCentral) private instalacionCentralRepository: Repository<InstalacionCentral>, private readonly bitacoraService: BitacoraService) { }
+
+  async create(createInstalacionCentralDto: CreateInstalacionCentralDto,req) {
+    try {
+      const nuevaInstalacion = this.instalacionCentralRepository.create(createInstalacionCentralDto);
+      const instalacionGuardada = await this.instalacionCentralRepository.save(nuevaInstalacion);
+              const querylogger = { createInstalacionCentralDto };
+      const idUser = Number(req.user.userId);
+      await this.bitacoraService.logToBitacora(
+        'Modelos',
+        `Instalacion creada con id: ${instalacionGuardada.id}.`,
+        'CREATE',
+        querylogger,
+        idUser,
+        1,
+        EstatusEnumBitcora.SUCCESS,
+      );
+
+      return instalacionGuardada;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   findAll() {

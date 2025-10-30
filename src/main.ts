@@ -39,7 +39,6 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
 
-  // 📄 Ruta donde estará disponible Swagger UI
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,

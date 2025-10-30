@@ -8,6 +8,7 @@ export class AuthController {
   
  
   @Post()
+@HttpCode(200)
   async login(@Body() loginAuthDto: LoginAuthDto) {
     return this.authService.signIn(loginAuthDto);
   }
