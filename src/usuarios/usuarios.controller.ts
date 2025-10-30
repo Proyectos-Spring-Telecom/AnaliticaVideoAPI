@@ -1,13 +1,14 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UpdateUsuarioContrasena } from './dto/update-usuario-contrasena.dto';
 import { ApiCrudResponse, ApiResponseCommon } from 'src/common/ApiResponse';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { UpdateUsuarioEstatusDto } from './dto/update-usuario-estatus.dto';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}

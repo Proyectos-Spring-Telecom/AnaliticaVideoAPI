@@ -3,7 +3,9 @@ import { MarcasService } from './marcas.service';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 import { CreateCatMarcaDto } from './dto/create-marca.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('marcas')
 export class MarcasController {
   constructor(private readonly marcasService: MarcasService) {}

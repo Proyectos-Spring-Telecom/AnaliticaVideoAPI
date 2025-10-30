@@ -3,7 +3,9 @@ import { EquiposService } from './equipos.service';
 import { CreateEquipoDto } from './dto/create-equipo.dto';
 import { UpdateEquipoDto } from './dto/update-equipo.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('equipos')
 export class EquiposController {
   constructor(private readonly equiposService: EquiposService) {}
