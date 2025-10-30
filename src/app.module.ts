@@ -47,6 +47,7 @@ import Joi from 'joi';
       autoLoadEntities: false,
       entities: [__dirname + '/entities/*{.ts,.js}'],
       synchronize: false, //Nunca poner en true 
+        bigNumberStrings: false,
       dateStrings: false,
       timezone: config.get<string>('DB_TZ') || '-06:00'
     }),

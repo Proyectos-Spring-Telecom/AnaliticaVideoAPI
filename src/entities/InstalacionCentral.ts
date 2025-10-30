@@ -22,6 +22,8 @@ export class InstalacionCentral {
 
   @Column({ type: "double", name: "Lng" })
   lng: number;
+    @Column("tinyint", { name: "Estatus", default: () => "'1'" })
+  estatus: number;
 
   @ManyToOne(() => Clientes, (cliente) => cliente.instalaciones, {
     onDelete: "RESTRICT",  

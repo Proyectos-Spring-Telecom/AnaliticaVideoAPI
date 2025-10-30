@@ -29,6 +29,8 @@ export class InstalacionEquipo {
 
   @Column({ type: "double", name: "Lng" })
   lng: number;
+    @Column("tinyint", { name: "Estatus", default: () => "'1'" })
+  estatus: number;
 
   @CreateDateColumn({ type: "datetime", name: "FHRegistro", default: () => "CURRENT_TIMESTAMP" })
   fhRegistro: Date;
