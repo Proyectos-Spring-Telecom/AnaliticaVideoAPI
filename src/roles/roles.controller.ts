@@ -5,7 +5,9 @@ import { ApiCrudResponse, ApiResponseCommon } from 'src/common/ApiResponse';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { UpdateRolEstatusDto } from './dto/update-rol-estatus.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}

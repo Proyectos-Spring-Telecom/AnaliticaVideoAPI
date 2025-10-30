@@ -3,7 +3,9 @@ import { ModelosService } from './modelos.service';
 import { UpdateModeloDto } from './dto/update-modelo.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 import { CreateCatModelosDto } from './dto/create-modelo.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('modelos')
 export class ModelosController {
   constructor(private readonly modelosService: ModelosService) {}

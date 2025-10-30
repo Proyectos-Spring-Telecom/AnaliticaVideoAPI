@@ -3,7 +3,9 @@ import { CatProductosService } from './cat-productos.service';
 import { CreateCatProductoDto } from './dto/create-cat-producto.dto';
 import { UpdateCatProductoDto } from './dto/update-cat-producto.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('catProductos')
 export class CatProductosController {
   constructor(private readonly catProductosService: CatProductosService) {}

@@ -90,7 +90,7 @@ export class PermisosService {
           const savedPermiso = await this.permisoRepository.save(create);
           const asignarRoot = {
             idPermiso: savedPermiso.id,
-            idUsuario: 1, //Se asigna al usuario supremo
+            idUsuario: 1, 
           };
           const permisoRoot = await this.usuarioPermiso.create(asignarRoot);
           this.usuarioPermiso.save(permisoRoot);
@@ -103,7 +103,7 @@ export class PermisosService {
             'CREATE',
             querylogger,
             Number(idUsuario),
-            savedPermiso.id,
+            createPermiso.idModulo,
             EstatusEnumBitcora.SUCCESS,
           );
     
@@ -127,7 +127,7 @@ export class PermisosService {
             'CREATE',
             querylogger,
             Number(idUsuario),
-            0,
+             createPermiso.idModulo,
             EstatusEnumBitcora.ERROR,
             error.message,
           );

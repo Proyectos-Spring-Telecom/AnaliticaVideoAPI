@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { InstalacionEquipoService } from './instalacion-equipo.service';
 import { CreateInstalacionEquipoDto } from './dto/create-instalacion-equipo.dto';
 import { UpdateInstalacionEquipoDto } from './dto/update-instalacion-equipo.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('instalacion-equipo')
 export class InstalacionEquipoController {
   constructor(private readonly instalacionEquipoService: InstalacionEquipoService) {}

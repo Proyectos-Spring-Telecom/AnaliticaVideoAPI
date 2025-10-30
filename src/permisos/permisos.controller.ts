@@ -5,7 +5,9 @@ import { ApiCrudResponse, ApiResponseCommon } from 'src/common/ApiResponse';
 import { UpdatePermisoEstatusDto } from './dto/update-permiso-estatus.dto';
 import { UpdatePermisoDto } from './dto/update-permiso.dto';
 import { CreatePermisoDto } from './dto/create-permiso.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('permisos')
 export class PermisosController {
   constructor(private readonly permisosService: PermisosService) {}

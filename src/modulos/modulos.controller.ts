@@ -5,7 +5,9 @@ import { ApiCrudResponse, ApiResponseCommon } from 'src/common/ApiResponse';
 import { CreateModuloDto } from './dto/create-modulo.dto';
 import { UpdateModuloDto } from './dto/update-modulo.dto';
 import { UpdateModulosEstatusDto } from './dto/update-estatus-modulo.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @Controller('modulos')
 export class ModulosController {
   constructor(private readonly modulosService: ModulosService) {}

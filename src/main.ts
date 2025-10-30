@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   app.enableCors({
     origin: '*', // Permitir todas las URLs; puedes poner un array de URLs específicas
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -24,8 +24,17 @@ async function bootstrap() {
     .setTitle('Video Analítica')
     .setDescription('Documentación automática de la API de NestJS')
     .setVersion('1.0.0')
-    .addBearerAuth()
-    .addServer('api')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        in: 'header',
+        name: 'Authorization',
+        description: 'Introduce tu token JWT aquí',
+      },
+      'access-token',
+    ).addServer('http://localhost:3000/api','local')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
