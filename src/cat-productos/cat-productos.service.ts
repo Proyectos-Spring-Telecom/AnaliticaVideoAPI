@@ -35,7 +35,7 @@ export class CatProductosService {
         );
       const create = await this.productoRepository.create(createCatProductoDto);
       const saved = await this.productoRepository.save(create);
-      const querylogger = { createCatProductoDto };
+      var querylogger = { createCatProductoDto };
       await this.bitacoraLogger.logToBitacora(
         "Producto",
         `Producto creado correctamente con nombre: ${saved.nombre}.`,
@@ -56,6 +56,16 @@ export class CatProductosService {
       };
       return result;
     } catch (error) {
+      await this.bitacoraLogger.logToBitacora(
+        'Roles',
+        `Se desactivo el rol con ID: ${createCatProductoDto.nombre}`,
+        'UPDATE',
+        createCatProductoDto,
+        req.user.userId,
+        1,
+        EstatusEnumBitcora.ERROR,
+        error.message,
+      );
       throw new BadRequestException(error);
     }
   }

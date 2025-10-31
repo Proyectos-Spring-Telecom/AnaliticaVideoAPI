@@ -38,6 +38,6 @@ export class CatProductosController {
 
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req) {
-    return this.catProductosService.remove(+id,req.user.id);
+    return this.catProductosService.remove(+id,req.user.userId);
   }
 }
