@@ -36,12 +36,13 @@ export class CatProductosService {
       const create = await this.productoRepository.create(createCatProductoDto);
       const saved = await this.productoRepository.save(create);
       var querylogger = { createCatProductoDto };
+      const idUser= Number(req.user.userId) || 1;
       await this.bitacoraLogger.logToBitacora(
         "Producto",
         `Producto creado correctamente con nombre: ${saved.nombre}.`,
         "CREATE",
         querylogger,
-        Number(req.user.userId),
+        idUser,
         1,
         EstatusEnumBitcora.SUCCESS
       );
@@ -61,7 +62,7 @@ export class CatProductosService {
         `Se desactivo el rol con ID: ${createCatProductoDto.nombre}`,
         'UPDATE',
         createCatProductoDto,
-        req.user.userId,
+        Number(req.user.userId),
         1,
         EstatusEnumBitcora.ERROR,
         error.message,
