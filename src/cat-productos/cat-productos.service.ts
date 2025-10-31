@@ -57,12 +57,14 @@ export class CatProductosService {
       };
       return result;
     } catch (error) {
+            const idUser= Number(req.user.userId) || 1;
+
       await this.bitacoraLogger.logToBitacora(
-        'Roles',
-        `Se desactivo el rol con ID: ${createCatProductoDto.nombre}`,
-        'UPDATE',
+        'Producto',
+        `Error al crear el producto con ID: ${createCatProductoDto.nombre}`,
+        'CREATE',
         createCatProductoDto,
-        Number(req.user.userId),
+        idUser,
         1,
         EstatusEnumBitcora.ERROR,
         error.message,
