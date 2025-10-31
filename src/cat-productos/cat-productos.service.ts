@@ -57,7 +57,7 @@ export class CatProductosService {
       };
       return result;
     } catch (error) {
-            const idUser= Number(req.user.userId) || 1;
+            const idUser= Number(req.user.userId) ;
 
       await this.bitacoraLogger.logToBitacora(
         'Producto',
