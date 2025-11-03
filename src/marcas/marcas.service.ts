@@ -9,7 +9,7 @@ import { UpdateMarcaDto } from "./dto/update-marca.dto";
 import { CreateCatMarcaDto } from "./dto/create-marca.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CatMarca } from "src/entities/CatMarcas";
-import { Not, Raw, Repository } from "typeorm";
+import { ILike, Not, Raw, Repository } from "typeorm";
 import {
   ApiCrudResponse,
   ApiResponseCommon,
@@ -26,16 +26,14 @@ export class MarcasService {
   ) {}
   async create(createMarcaDto: CreateCatMarcaDto, req) {
     try {
-      const exist = await this.marcaRepository.find({
+      const exist = await this.marcaRepository.findOne({
         where: {
-          nombre: Raw((alias) => `LOWER(${alias}) = LOWER(:nombre)`, {
-            nombre: createMarcaDto.nombre,
-          }),
+          nombre: ILike(createMarcaDto.nombre), // hace LOWER(nombre) = LOWER(valor)
           idProducto: createMarcaDto.idProducto,
         },
       });
-      if (exist)
-        throw new BadRequestException("Ya exíste una marca con este nombre");
+      
+      if (exist)  throw new BadRequestException("Ya exíste una marca con este nombre");
       const create = await this.marcaRepository.create(createMarcaDto);
       const saved = await this.marcaRepository.save(create);
       const querylogger = { CreateCatMarcaDto };
@@ -44,7 +42,7 @@ export class MarcasService {
         `Marca creada correctamente con nombre: ${saved.nombre}.`,
         "CREATE",
         querylogger,
-        req.user.id,
+        req.user.userId,
         1,
         EstatusEnumBitcora.SUCCESS
       );

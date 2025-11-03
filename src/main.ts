@@ -16,9 +16,18 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true, // elimina propiedades no definidas en el DTO
       forbidNonWhitelisted: true, // lanza error si se envían propiedades extra
-      transform: true, // transforma los tipos automáticamente (según DTO)
+      transform: true,
+       transformOptions: {
+        enableImplicitConversion: true, // 👈 convierte "1" -> 1
+      },
     }),
   );
+
+  app.getHttpAdapter().get('/api/docs-json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(document);
+});
+
 
   const config = new DocumentBuilder()
     .setTitle('Video Analítica')

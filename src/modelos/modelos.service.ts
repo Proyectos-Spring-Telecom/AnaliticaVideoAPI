@@ -14,7 +14,7 @@ export class ModelosService {
 
  async create(createModeloDto: CreateCatModelosDto,idUser:number) {
     try {
-      const exist = await this.modeloRepository.find({
+      const exist = await this.modeloRepository.findOne({
         where: {
           nombre: Raw((alias) => `LOWER(${alias}) = LOWER(:nombre)`, { nombre: createModeloDto.nombre }),
           idProducto : createModeloDto.idProducto

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, Quer
 import { InstalacionCentralService } from './instalacion-central.service';
 import { CreateInstalacionCentralDto } from './dto/create-instalacion-central.dto';
 import { UpdateInstalacionCentralDto } from './dto/update-instalacion-central.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiProperty } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -11,35 +11,58 @@ export class InstalacionCentralController {
   constructor(private readonly instalacionCentralService: InstalacionCentralService) { }
 
   @Post()
+  @ApiOperation({
+    summary:'Registrar instalación central'
+  })
   create(@Body() createInstalacionCentralDto: CreateInstalacionCentralDto, @Req() req: any) {
     return this.instalacionCentralService.create(createInstalacionCentralDto, req);
   }
 
   @Get()
+  @ApiOperation({
+    summary: 'Listar todas las instalaciones centrales con sus instalaciones de equipos',
+    description:
+      'Obtiene un listado completo de todas las instalaciones centrales registradas en el sistema, incluyendo la información del cliente asociado y sus instalaciones vinculadas.',
+  })
   findAll() {
     return this.instalacionCentralService.findAll();
   }
 
   @Get('paginated')
+  @ApiOperation({
+    summary:'Lista de instalaciones centrales (cliente ubicación para grid'
+  })
   findAllPaginated(@Query('page') page: number, @Query('limit') limit: number) {
     return this.instalacionCentralService.findAllPaginated(page, limit);
   }
 
   @Get(':id')
+  @ApiOperation({
+    summary:'Obtener instalacion por id'
+  })
   findOne(@Param('id') id: number) {
     console.log(id)
     return this.instalacionCentralService.findOne(+id);
   }
   @Patch('/activar/:id')
+  @ApiOperation({
+    summary:'Activar instalación central'
+  })
   activar(@Param('id') id: string) {
     return this.instalacionCentralService.activar(+id);
   }
   @Patch(':id')
+  @ApiOperation({
+    summary:'Actualizar instalación central'
+  })
   update(@Param('id') id: string, @Body() updateInstalacionCentralDto: UpdateInstalacionCentralDto) {
     return this.instalacionCentralService.update(+id, updateInstalacionCentralDto);
   }
 
-  @Delete(':id')
+  @Patch('/desactivar/:id')
+  @ApiOperation({
+    summary:'desactivar instalación central'
+  })
   remove(@Param('id') id: string) {
     return this.instalacionCentralService.remove(+id);
   }

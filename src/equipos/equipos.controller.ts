@@ -12,7 +12,7 @@ export class EquiposController {
 
   @Post()
   create(@Body() createEquipoDto: CreateEquipoDto, @Req() req:any) {
-    return this.equiposService.create(createEquipoDto,req.user.id);
+    return this.equiposService.create(createEquipoDto,req.user.userId);
   }
 
   @Get()
@@ -32,11 +32,11 @@ export class EquiposController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEquipoDto: UpdateEquipoDto, @Req() req:any) {
-    return this.equiposService.update(+id, updateEquipoDto, req.user.id);
+    return this.equiposService.update(+id, updateEquipoDto, req.user.userId);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string,@Req() req:any) {
-    return this.equiposService.remove(+id, req.user.id);
+    return this.equiposService.remove(+id, req.user.userId);
   }
 }

@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Raw, Repository } from 'typeorm';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
 import { ApiCrudResponse, ApiResponseCommon, EstatusEnumBitcora } from 'src/common/ApiResponse';
+import { EstadoEquipoEnum } from 'src/utils/enums/EstatusEquiposEnum.enum';
 
 @Injectable()
 export class EquiposService {
@@ -13,13 +14,17 @@ export class EquiposService {
 
   async create(createEquipoDto: CreateEquipoDto,idUser:number) {
     try {
-      const exist = await this.equiposRepository.find({
+      const exist = await this.equiposRepository.findOne({
         where: {
-          numeroSerie: Raw((alias) => `LOWER(${alias}) = LOWER(:numeroSerie)`, { nombre: createEquipoDto.numeroSerie }),
-        }
+          numeroSerie: Raw(
+            (alias) => `LOWER(${alias}) = LOWER(:numeroSerie)`,
+            { numeroSerie: createEquipoDto.numeroSerie }
+          ),
+        },
       });
       if(exist) throw new BadRequestException("Ya exíste un equipo con este número de serie")
-        const create = await this.equiposRepository.create(createEquipoDto);
+        createEquipoDto.idEstadoEquipo = EstadoEquipoEnum.DISPONIBLE;
+      const create = await this.equiposRepository.create(createEquipoDto);
         const saved = await this.equiposRepository.save(create);
         const querylogger = { createEquipoDto };
         await this.bitacoraLogger.logToBitacora(
