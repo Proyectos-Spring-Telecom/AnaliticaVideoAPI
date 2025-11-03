@@ -15,10 +15,10 @@ import { InstalacionCentral } from "./InstalacionCentral";
 @Entity({ name: "InstalacionEquipo" })
 export class InstalacionEquipo {
   @PrimaryGeneratedColumn({ type: "bigint" })
-  id: string;
+  id: number;
 
   @Column({ type: "bigint", name: "IdEquipo" })
-  idEquipo: string;
+  idEquipo: number;
 
   @ManyToOne(() => Equipos, (equipo) => equipo.instalacionesEquipo) // Relación con Equipo
   @JoinColumn({ name: "IdEquipo", referencedColumnName: "id" })
@@ -39,7 +39,10 @@ export class InstalacionEquipo {
   fechaActualizacion: Date;
 
   @Column({ type: "bigint", name: "IdCliente", nullable: true })
-  idCliente: string;
+  idCliente: number;
+  @Column({ type: "bigint", name: "IdSedeCentral", nullable: true })
+  idSedeCentral: number;
+
 
   @ManyToOne(() => Clientes, (cliente) => cliente.instalacionesEquipo, { nullable: true })
   @JoinColumn({ name: "IdCliente", referencedColumnName: "id" })

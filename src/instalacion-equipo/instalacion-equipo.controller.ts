@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
 import { InstalacionEquipoService } from './instalacion-equipo.service';
 import { CreateInstalacionEquipoDto } from './dto/create-instalacion-equipo.dto';
 import { UpdateInstalacionEquipoDto } from './dto/update-instalacion-equipo.dto';
@@ -10,8 +10,8 @@ export class InstalacionEquipoController {
   constructor(private readonly instalacionEquipoService: InstalacionEquipoService) {}
 
   @Post()
-  create(@Body() createInstalacionEquipoDto: CreateInstalacionEquipoDto) {
-    return this.instalacionEquipoService.create(createInstalacionEquipoDto);
+  create(@Body() createInstalacionEquipoDto: CreateInstalacionEquipoDto, @Req() req) {
+    return this.instalacionEquipoService.create(createInstalacionEquipoDto,req);
   }
 
   @Get()

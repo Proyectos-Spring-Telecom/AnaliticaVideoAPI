@@ -79,6 +79,13 @@ import { InstalacionEquipo } from './InstalacionEquipo';
       comment: 'Modelo del equipo',
     })
     idModelo: number;
+    @Column({
+      name: 'IdEstadoEquipo',
+      type: 'int',
+      nullable: false,
+      comment: 'Estado del equipo',
+    })
+    idEstadoEquipo: number;
   
     // 🔗 Relación con CatModelos
     @ManyToOne(() => CatModelos, (modelo) => modelo.id, {

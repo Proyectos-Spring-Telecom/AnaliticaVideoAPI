@@ -26,7 +26,7 @@ export class MarcasService {
   ) {}
   async create(createMarcaDto: CreateCatMarcaDto, req) {
     try {
-      const exist = await this.marcaRepository.find({
+      const exist = await this.marcaRepository.findOne({
         where: {
           nombre: Raw((alias) => `LOWER(${alias}) = LOWER(:nombre)`, {
             nombre: createMarcaDto.nombre,
@@ -34,6 +34,7 @@ export class MarcasService {
           idProducto: createMarcaDto.idProducto,
         },
       });
+      console.log(exist)
       if (exist)
         throw new BadRequestException("Ya exíste una marca con este nombre");
       const create = await this.marcaRepository.create(createMarcaDto);
