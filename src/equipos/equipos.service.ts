@@ -76,7 +76,7 @@ export class EquiposService {
 
   async findAll() {
     try {
-      const data = await this.equiposRepository.find();
+      const data = await this.equiposRepository.find({relations:['cliente','modelo',]});
       const result: ApiResponseCommon = {
         data: data,
       };

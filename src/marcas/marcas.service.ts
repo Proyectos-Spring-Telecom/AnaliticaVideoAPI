@@ -84,7 +84,7 @@ export class MarcasService {
 
   async findAll() {
     try {
-      const data = await this.marcaRepository.find();
+      const data = await this.marcaRepository.find({relations:['producto']});
       const result: ApiResponseCommon = {
         data: data,
       };
@@ -195,6 +195,60 @@ export class MarcasService {
       }
       throw new InternalServerErrorException({
         message: `Error al eliminar la marca con ID: ${id}.`,
+        error: error.message,
+      });
+    }
+  }
+
+  async activar(id: number, idUser: number) {
+    try {
+      const marcaEliminar = await this.marcaRepository.findOne({
+        where: { id: id },
+      });
+      if (!marcaEliminar) {
+        throw new NotFoundException(
+          `La marca con ID: ${id} no fue encontrado.`
+        );
+      }
+      await this.marcaRepository.update(id, { estatus: 1});
+
+      const querylogger = { id: id, estatus: 1 };
+      await this.bitacoraLogger.logToBitacora(
+        "Marcas",
+        `Se activo la marca con ID: ${id}.`,
+        "UPDATE",
+        querylogger,
+        Number(idUser),
+        1,
+        EstatusEnumBitcora.SUCCESS
+      );
+
+      const result: ApiCrudResponse = {
+        status: "success",
+        message: "La marca fue activada correctamente.",
+        data: {
+          id: id,
+          nombre: `${marcaEliminar.nombre} ` || "",
+        },
+      };
+      return result;
+    } catch (error) {
+      const querylogger = { id: id, estatus: 0 };
+      await this.bitacoraLogger.logToBitacora(
+        "Marcas",
+        `Se activo el marca con ID: ${id}.`,
+        "UPDATE",
+        querylogger,
+        Number(idUser),
+        1,
+        EstatusEnumBitcora.ERROR,
+        error.message
+      );
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        message: `Error al activar la marca con ID: ${id}.`,
         error: error.message,
       });
     }
