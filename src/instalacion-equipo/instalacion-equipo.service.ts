@@ -55,8 +55,13 @@ export class InstalacionEquipoService {
      }
   }
 
-  findAll() {
-    return `This action returns all instalacionEquipo`;
+  async findAll() {
+    try {
+       const data = await this.instalacionEquipo.find({relations:['equipo','instalacionCentral']})
+       return data;
+    } catch (error) {
+      
+    }
   }
 
   findOne(id: number) {
