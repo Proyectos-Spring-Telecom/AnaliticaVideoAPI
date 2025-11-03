@@ -8,10 +8,11 @@ import { InstalacionEquipo } from 'src/entities/InstalacionEquipo';
 import { EstadoEquipoEnum } from 'src/utils/enums/EstatusEquiposEnum.enum';
 import { ApiCrudResponse, EstatusEnumBitcora } from 'src/common/ApiResponse';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
+import { InstalacionCentral } from 'src/entities/InstalacionCentral';
 
 @Injectable()
 export class InstalacionEquipoService {
-  constructor(@InjectRepository(Equipos) private readonly equiposRepository:Repository<Equipos>,
+  constructor(@InjectRepository(InstalacionCentral) private readonly instalacionCentral:Repository<InstalacionCentral>, @InjectRepository(Equipos) private readonly equiposRepository:Repository<Equipos>,
   @InjectRepository(InstalacionEquipo) private readonly instalacionEquipo:Repository<InstalacionEquipo>, private readonly bitacoraService: BitacoraService){}
 
   async create(createInstalacionEquipoDto: CreateInstalacionEquipoDto, req:any) {
