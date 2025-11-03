@@ -65,15 +65,59 @@ export class InstalacionEquipoService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} instalacionEquipo`;
+  async findOne(id: number) {
+    try {
+      const instalacion = await this.instalacionEquipo.findOne({where:{id:id}})
+      if(!instalacion) throw new NotFoundException('No se ha encontrado la instalacion buscada')
+       return instalacion;
+    } catch (error) {
+      throw new error;
+    }
   }
 
-  update(id: number, updateInstalacionEquipoDto: UpdateInstalacionEquipoDto) {
-    return `This action updates a #${id} instalacionEquipo`;
+  async update(id: number, updateInstalacionEquipoDto: UpdateInstalacionEquipoDto) {
+    try {
+      const instalacion = await this.instalacionEquipo.findOne({ where: { id: id } });
+      if (!instalacion) {
+        throw new ConflictException(`La instalacion con el id ${id} no existe`);
+      }
+      await this.instalacionEquipo.update(id, updateInstalacionEquipoDto);
+      const result: ApiCrudResponse = {
+        status: 'success',
+        message: 'La instalación del equipo ha sido actualizada correctamente.',
+        data: {
+          id: id,
+          nombre: `${updateInstalacionEquipoDto.lat} ${updateInstalacionEquipoDto.lng}` || '',
+
+        },
+      };
+      return result
+    } catch (error) {
+
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} instalacionEquipo`;
+  async remove(id: number) {
+    try {
+      const instalacion = await this.instalacionEquipo.findOne({where:{id:id}})
+      if(!instalacion) throw new NotFoundException('No se ha encontrado la instalacion buscada')
+       instalacion.estatus = 0;
+       const update = await this.instalacionEquipo.update(id,instalacion);
+       return update;
+    } catch (error) {
+      throw new error;
+    }
+  }
+
+  async activar(id: number) {
+    try {
+      const instalacion = await this.instalacionEquipo.findOne({where:{id:id}})
+      if(!instalacion) throw new NotFoundException('No se ha encontrado la instalacion buscada')
+       instalacion.estatus = 1;
+       const update = await this.instalacionEquipo.update(id,instalacion);
+       return update;
+    } catch (error) {
+      throw new error;
+    }
   }
 }
