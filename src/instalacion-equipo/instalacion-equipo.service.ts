@@ -58,7 +58,7 @@ export class InstalacionEquipoService {
 
   async findAll() {
     try {
-       const data = await this.instalacionEquipo.find({relations:['equipo','instalacionCentral']})
+       const data = await this.instalacionEquipo.find({relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo']})
        return data;
     } catch (error) {
       

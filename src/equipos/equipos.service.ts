@@ -58,6 +58,8 @@ export class EquiposService {
         const [data, total] = await this.equiposRepository.findAndCount({
         skip,
         take: limit,
+                        relations:['estadoEquipo','modelo','cliente'],
+
         order: { id: 'DESC' }, 
       });
         const result: ApiResponseCommon = {

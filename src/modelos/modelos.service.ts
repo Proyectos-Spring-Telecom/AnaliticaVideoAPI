@@ -55,6 +55,7 @@ export class ModelosService {
         const [data, total] = await this.modeloRepository.findAndCount({
         skip,
         take: limit,
+                relations:['producto','marca'],
         order: { id: 'DESC' }, 
       });
         const result: ApiResponseCommon = {

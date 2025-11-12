@@ -66,6 +66,7 @@ export class MarcasService {
       const [data, total] = await this.marcaRepository.findAndCount({
         skip,
         take: limit,
+        relations:['producto'],
         order: { id: "DESC" },
       });
       const result: ApiResponseCommon = {
