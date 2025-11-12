@@ -49,6 +49,7 @@ import Joi from 'joi';
       synchronize: false, //Nunca poner en true 
         bigNumberStrings: false,
       dateStrings: false,
+      
       timezone: 'America/Mexico_City',
     }),
   }),

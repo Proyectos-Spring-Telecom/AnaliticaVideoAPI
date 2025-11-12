@@ -73,9 +73,10 @@ import {
     })
     fotoProceso?: string;
   
-    @CreateDateColumn({
+    @Column({
       name: 'Fecha',
       type: 'timestamp',
+      nullable: false,
     })
     fecha: Date;
   

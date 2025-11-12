@@ -15,10 +15,41 @@ export class IncidenciasService {
 
   async create(createIncidenciaDto: CreateIncidenciaDto, idUser: number) {
     try {
-      console.log('[Service] Creando nueva incidencia...');
-      const save = await this.incidenciaRepository.create(createIncidenciaDto);
-      const created = await this.incidenciaRepository.save(save);
-      console.log('[Service] Incidencia creada con ID:', created.id);
+      // Preparar la fecha: quitar el 'Z' o offset de zona horaria para que MySQL la interprete como hora local
+      let fechaParaBD: string;
+      if (createIncidenciaDto.fecha) {
+        // Quitar 'Z', '+00:00', '-06:00', etc. y dejar solo la fecha y hora
+        fechaParaBD = createIncidenciaDto.fecha.replace('T', ' ').replace(/[Z+-]\d{2}:\d{2}$/, '').substring(0, 19);
+      } else {
+        // Si no viene fecha, usar la actual en formato local
+        const ahora = new Date();
+        fechaParaBD = ahora.toISOString().replace('T', ' ').substring(0, 19);
+      }
+      
+      const query = `
+        INSERT INTO Incidencias (Genero, Edad, EstadoAnimo, TiempoEnEscena, Foto, FotoProceso, Fecha, IdDispositivo)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      
+      const result = await this.incidenciaRepository.query(query, [
+        createIncidenciaDto.genero,
+        createIncidenciaDto.edad,
+        createIncidenciaDto.estadoAnimo,
+        createIncidenciaDto.tiempoEnEscena || null,
+        createIncidenciaDto.foto || null,
+        createIncidenciaDto.fotoProceso || null,
+        fechaParaBD,
+        createIncidenciaDto.idDispositivo,
+      ]);
+      
+      // Obtener la incidencia creada
+      const created = await this.incidenciaRepository.findOne({
+        where: { id: result.insertId }
+      });
+      
+      if (!created) {
+        throw new BadRequestException('Error al crear la incidencia');
+      }
       
       // Formatear la incidencia para el evento
       const incidenciaFormateada = {
@@ -38,13 +69,10 @@ export class IncidenciasService {
       };
       
       // Emitir evento de nueva incidencia a través de socket.io
-      console.log('[Service] Intentando emitir evento socket...');
       this.incidenciasGateway.emitNuevaIncidencia(incidenciaFormateada);
-      console.log('[Service] Evento socket llamado');
       
       return created;
     } catch (error) {
-      console.error('[Service] Error al crear incidencia:', error);
       throw new BadRequestException(error);
     }
   }
