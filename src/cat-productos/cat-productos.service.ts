@@ -36,7 +36,7 @@ export class CatProductosService {
       const create = await this.productoRepository.create(createCatProductoDto);
       const saved = await this.productoRepository.save(create);
       var querylogger = { createCatProductoDto };
-      const idUser= Number(req.user.userId) || 1;
+      const idUser= Number(req.user.userId) ;
       await this.bitacoraLogger.logToBitacora(
         "Producto",
         `Producto creado correctamente con nombre: ${saved.nombre}.`,

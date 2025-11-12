@@ -58,6 +58,8 @@ export class EquiposService {
         const [data, total] = await this.equiposRepository.findAndCount({
         skip,
         take: limit,
+                        relations:['estadoEquipo','modelo','cliente'],
+
         order: { id: 'DESC' }, 
       });
         const result: ApiResponseCommon = {
@@ -76,7 +78,7 @@ export class EquiposService {
 
   async findAll() {
     try {
-      const data = await this.equiposRepository.find();
+      const data = await this.equiposRepository.find({relations:['cliente','modelo',]});
       const result: ApiResponseCommon = {
         data: data,
       };

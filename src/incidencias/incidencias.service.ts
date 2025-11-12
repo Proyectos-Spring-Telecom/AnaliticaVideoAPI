@@ -3,18 +3,41 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Incidencia } from "src/entities/Incidencias";
 import { Between, Repository } from "typeorm";
 import { CreateIncidenciaDto } from "./dto/create-incidencia.dto";
+import { IncidenciasGateway } from "./incidencias.gateway";
 
 @Injectable()
 export class IncidenciasService {
   constructor(
     @InjectRepository(Incidencia)
-    private readonly incidenciaRepository: Repository<Incidencia>
+    private readonly incidenciaRepository: Repository<Incidencia>,
+    private readonly incidenciasGateway: IncidenciasGateway
   ) { }
 
   async create(createIncidenciaDto: CreateIncidenciaDto, idUser: number) {
     try {
       const save = await this.incidenciaRepository.create(createIncidenciaDto);
       const created = await this.incidenciaRepository.save(save);
+      
+      // Formatear la incidencia para el evento
+      const incidenciaFormateada = {
+        id: created.id,
+        genero: created.genero,
+        edad: created.edad,
+        estadoAnimo: created.estadoAnimo,
+        idDispositivo: created.idDispositivo,
+        tiempoEnEscena: created.tiempoEnEscena,
+        foto: created.foto,
+        fecha: created.fecha
+          ? new Date(created.fecha).toLocaleString('es-MX', {
+              timeZone: 'America/Mexico_City',
+              hour12: false
+            }).replace(',', '')
+          : null,
+      };
+      
+      // Emitir evento de nueva incidencia a través de socket.io
+      this.incidenciasGateway.emitNuevaIncidencia(incidenciaFormateada);
+      
       return created;
     } catch (error) {
       throw new BadRequestException(error);

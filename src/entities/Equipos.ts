@@ -11,6 +11,7 @@ import {
   import { CatModelos } from './CatModelos';
 import { Clientes } from './Clientes';
 import { InstalacionEquipo } from './InstalacionEquipo';
+import { CatEstadoEquipo } from './CatEstadoEquipo';
   
   @Entity('Equipos')
   export class Equipos {
@@ -105,5 +106,12 @@ import { InstalacionEquipo } from './InstalacionEquipo';
 
     @OneToMany(() => InstalacionEquipo, (instalacion) => instalacion.equipo)
   instalacionesEquipo: InstalacionEquipo[];
+
+@ManyToOne(() => CatEstadoEquipo, (estadoEquipo) => estadoEquipo.id, {
+  onDelete: 'SET NULL', // o 'CASCADE' si quieres que al eliminar el estado se borre el equipo
+  onUpdate: 'CASCADE',
+})
+@JoinColumn({ name: 'IdEstadoEquipo' })
+estadoEquipo: CatEstadoEquipo;
   }
   

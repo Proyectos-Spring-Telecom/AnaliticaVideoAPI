@@ -49,7 +49,7 @@ import Joi from 'joi';
       synchronize: false, //Nunca poner en true 
         bigNumberStrings: false,
       dateStrings: false,
-      timezone: config.get<string>('DB_TZ') || '-06:00'
+      timezone: 'America/Mexico_City',
     }),
   }),
 
