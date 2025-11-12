@@ -14,7 +14,7 @@ export class ModelosService {
 
  async create(createModeloDto: CreateCatModelosDto,idUser:number) {
     try {
-      const exist = await this.modeloRepository.find({
+      const exist = await this.modeloRepository.findOne({
         where: {
           nombre: Raw((alias) => `LOWER(${alias}) = LOWER(:nombre)`, { nombre: createModeloDto.nombre }),
           idProducto : createModeloDto.idProducto
@@ -73,7 +73,7 @@ export class ModelosService {
 
   async findAll() {
     try {
-      const data = await this.modeloRepository.find();
+      const data = await this.modeloRepository.find({relations:['marca','producto']});
       const result: ApiResponseCommon = {
         data: data,
       };
@@ -151,7 +151,7 @@ export class ModelosService {
       const querylogger = { id: id, estatus: 0 };
       await this.bitacoraLogger.logToBitacora(
         "Marcas",
-        `Se eliminó la marca con ID: ${id}.`,
+        `Se desactivo la marca con ID: ${id}.`,
         "UPDATE",
         querylogger,
         Number(idUser),
@@ -161,7 +161,7 @@ export class ModelosService {
 
       const result: ApiCrudResponse = {
         status: "success",
-        message: "La marca fue eliminado correctamente.",
+        message: "La marca fue desactivada correctamente.",
         data: {
           id: id,
           nombre: `${marcaEliminar.nombre} ` || "",
@@ -172,7 +172,7 @@ export class ModelosService {
       const querylogger = { id: id, estatus: 0 };
       await this.bitacoraLogger.logToBitacora(
         "Marcas",
-        `Se eliminó el marca con ID: ${id}.`,
+        `Se desactivo el marca con ID: ${id}.`,
         "UPDATE",
         querylogger,
         Number(idUser),
@@ -184,7 +184,61 @@ export class ModelosService {
         throw error;
       }
       throw new InternalServerErrorException({
-        message: `Error al eliminar la marca con ID: ${id}.`,
+        message: `Error al desactivar la marca con ID: ${id}.`,
+        error: error.message,
+      });
+    }
+  }
+
+  async activar(id: number,idUser:number) {
+    try {
+      const marcaEliminar = await this.modeloRepository.findOne({
+        where: { id: id },
+      });
+      if (!marcaEliminar) {
+        throw new NotFoundException(
+          `La marca con ID: ${id} no fue encontrado.`
+        );
+      }
+      await this.modeloRepository.update(id, { estatus: 1 });
+
+      const querylogger = { id: id, estatus: 0 };
+      await this.bitacoraLogger.logToBitacora(
+        "Marcas",
+        `Se activo la marca con ID: ${id}.`,
+        "UPDATE",
+        querylogger,
+        Number(idUser),
+        1,
+        EstatusEnumBitcora.SUCCESS
+      );
+
+      const result: ApiCrudResponse = {
+        status: "success",
+        message: "La marca fue activado correctamente.",
+        data: {
+          id: id,
+          nombre: `${marcaEliminar.nombre} ` || "",
+        },
+      };
+      return result;
+    } catch (error) {
+      const querylogger = { id: id, estatus: 0 };
+      await this.bitacoraLogger.logToBitacora(
+        "Marcas",
+        `Se activo el marca con ID: ${id}.`,
+        "UPDATE",
+        querylogger,
+        Number(idUser),
+        1,
+        EstatusEnumBitcora.ERROR,
+        error.message
+      );
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        message: `Error al activar la marca con ID: ${id}.`,
         error: error.message,
       });
     }

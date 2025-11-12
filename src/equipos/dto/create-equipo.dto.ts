@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { EstadoEquipoEnum } from 'src/utils/enums/EstatusEquiposEnum.enum';
 
 export class CreateEquipoDto {
   @ApiProperty({
@@ -38,6 +39,10 @@ export class CreateEquipoDto {
   @IsInt()
   @IsNotEmpty({ message: 'El Id del cliente es obligatorio' })
   idCliente: number;
+  
+  @IsEnum(EstadoEquipoEnum)
+  @IsOptional()
+  idEstadoEquipo: EstadoEquipoEnum;
 
   @ApiProperty({
     description: 'Id del modelo del equipo',

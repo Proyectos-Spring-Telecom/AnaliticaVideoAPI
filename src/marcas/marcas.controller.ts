@@ -36,8 +36,13 @@ export class MarcasController {
     return this.marcasService.update(+id, updateMarcaDto,req.user.userId);
   }
 
-  @Delete(':id')
+  @Patch('/desactivar/:id')
   remove(@Param('id') id: string, @Req() req) {
     return this.marcasService.remove(+id, req.user.userId);
+  }
+
+  @Patch('/activar/:id')
+  activar(@Param('id') id: string, @Req() req) {
+    return this.marcasService.activar(+id, req.user.userId);
   }
 }

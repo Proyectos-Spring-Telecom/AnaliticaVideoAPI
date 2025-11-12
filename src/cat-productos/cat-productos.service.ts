@@ -175,7 +175,7 @@ export class CatProductosService {
       const querylogger = { id: id, estatus: 0 };
       await this.bitacoraLogger.logToBitacora(
         'Productos',
-        `Se eliminó el producto con ID: ${id}.`,
+        `Se desactivo el producto con ID: ${id}.`,
         'UPDATE',
         querylogger,
         Number(idUser),
@@ -186,7 +186,7 @@ export class CatProductosService {
       //Api response
       const result: ApiCrudResponse = {
         status: 'success',
-        message: 'El producto fue eliminado correctamente.',
+        message: 'El producto fue desactivado correctamente.',
         data: {
           id: id,
           nombre:
@@ -213,6 +213,64 @@ export class CatProductosService {
       }
       throw new InternalServerErrorException({
         message: `Error al eliminar el producto con ID: ${id}.`,
+        error: error.message,
+      });
+    }
+  }
+  async activar(id: number,idUser:number) {
+    try {
+      const clienteEliminar = await this.productoRepository.findOne({
+        where: { id: id },
+      });
+      if (!clienteEliminar) {
+        throw new NotFoundException(
+          `El producto con ID: ${id} no fue encontrado.`,
+        );
+      }
+      await this.productoRepository.update(id, { estatus: 1 });
+
+      //-----Registro en la bitacora----- SUCCESS
+      const querylogger = { id: id, estatus: 1};
+      await this.bitacoraLogger.logToBitacora(
+        'Productos',
+        `Se activo el producto con ID: ${id}.`,
+        'UPDATE',
+        querylogger,
+        Number(idUser),
+        1,
+        EstatusEnumBitcora.SUCCESS,
+      );
+
+      //Api response
+      const result: ApiCrudResponse = {
+        status: 'success',
+        message: 'El producto fue activado correctamente.',
+        data: {
+          id: id,
+          nombre:
+            `${clienteEliminar.nombre} ` ||
+            '',
+        },
+      };
+      return result;
+    } catch (error) {
+      //-----Registro en la bitacora----- ERROR
+      const querylogger = { id: id, estatus: 0 };
+      await this.bitacoraLogger.logToBitacora(
+        'Productos',
+        `Se activo el producto con ID: ${id}.`,
+        'UPDATE',
+        querylogger,
+        Number(idUser),
+        1,
+        EstatusEnumBitcora.ERROR,
+        error.message,
+      );
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        message: `Error al activar el producto con ID: ${id}.`,
         error: error.message,
       });
     }

@@ -36,8 +36,13 @@ export class CatProductosController {
     return this.catProductosService.update(+id, updateCatProductoDto, req);
   }
 
-  @Delete(':id')
+  @Patch('/desactivar/:id')
   remove(@Param('id') id: string, @Req() req) {
     return this.catProductosService.remove(+id,req.user.userId);
+  }
+
+  @Patch('/activar/:id')
+  activar(@Param('id') id: string, @Req() req) {
+    return this.catProductosService.activar(+id,req.user.userId);
   }
 }

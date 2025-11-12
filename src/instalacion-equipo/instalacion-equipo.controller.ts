@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
 import { InstalacionEquipoService } from './instalacion-equipo.service';
 import { CreateInstalacionEquipoDto } from './dto/create-instalacion-equipo.dto';
 import { UpdateInstalacionEquipoDto } from './dto/update-instalacion-equipo.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
 @ApiBearerAuth('access-token')
 @Controller('instalacion-equipo')
@@ -10,27 +10,44 @@ export class InstalacionEquipoController {
   constructor(private readonly instalacionEquipoService: InstalacionEquipoService) {}
 
   @Post()
-  create(@Body() createInstalacionEquipoDto: CreateInstalacionEquipoDto) {
-    return this.instalacionEquipoService.create(createInstalacionEquipoDto);
+  @ApiOperation({
+    summary:'Registrar instalación equipo perteneciente a una sede'
+  })
+  create(@Body() createInstalacionEquipoDto: CreateInstalacionEquipoDto, @Req() req) {
+    return this.instalacionEquipoService.create(createInstalacionEquipoDto,req);
   }
 
   @Get()
+  @ApiOperation({
+    summary:'Obtener instalaciónes equipos'
+  })
   findAll() {
     return this.instalacionEquipoService.findAll();
   }
 
   @Get(':id')
+  @ApiOperation({
+    summary:'Obtener instalaciónes equipos'
+  })
   findOne(@Param('id') id: string) {
     return this.instalacionEquipoService.findOne(+id);
   }
 
   @Patch(':id')
+  @ApiOperation({
+    summary:'Actualizar instalación equipo'
+  })
   update(@Param('id') id: string, @Body() updateInstalacionEquipoDto: UpdateInstalacionEquipoDto) {
     return this.instalacionEquipoService.update(+id, updateInstalacionEquipoDto);
   }
 
-  @Delete(':id')
+  @Patch('/desactivar/:id')
   remove(@Param('id') id: string) {
     return this.instalacionEquipoService.remove(+id);
+  }
+
+  @Patch('/activar/:id')
+  activar(@Param('id') id: string) {
+    return this.instalacionEquipoService.activar(+id);
   }
 }
