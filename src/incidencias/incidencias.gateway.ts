@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
     origin: '*',
     credentials: true,
   },
-  namespace: '/incidencias',
+  namespace: '/api/incidencias',
 })
 export class IncidenciasGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -28,7 +28,6 @@ export class IncidenciasGateway
   }
 
   emitNuevaIncidencia(incidencia: any) {
-    console.log(incidencia,"EL")
     this.server.emit('nueva-incidencia', incidencia);
   }
 }

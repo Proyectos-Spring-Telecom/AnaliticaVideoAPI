@@ -15,8 +15,10 @@ export class IncidenciasService {
 
   async create(createIncidenciaDto: CreateIncidenciaDto, idUser: number) {
     try {
+      console.log('[Service] Creando nueva incidencia...');
       const save = await this.incidenciaRepository.create(createIncidenciaDto);
       const created = await this.incidenciaRepository.save(save);
+      console.log('[Service] Incidencia creada con ID:', created.id);
       
       // Formatear la incidencia para el evento
       const incidenciaFormateada = {
@@ -36,10 +38,13 @@ export class IncidenciasService {
       };
       
       // Emitir evento de nueva incidencia a través de socket.io
+      console.log('[Service] Intentando emitir evento socket...');
       this.incidenciasGateway.emitNuevaIncidencia(incidenciaFormateada);
+      console.log('[Service] Evento socket llamado');
       
       return created;
     } catch (error) {
+      console.error('[Service] Error al crear incidencia:', error);
       throw new BadRequestException(error);
     }
   }
@@ -74,7 +79,7 @@ export class IncidenciasService {
         order: { fecha: 'DESC' },
         take: 1,
       });
-
+      console.log(incidencia,"hit")
       if (incidencia.length === 0) return null;
 
       const i = incidencia[0];
