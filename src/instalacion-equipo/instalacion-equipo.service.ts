@@ -50,6 +50,7 @@ export class InstalacionEquipoService {
         };
         return result;
      } catch (error) {
+      console.log(error)
       if (error instanceof HttpException) {
         throw error;
       }
