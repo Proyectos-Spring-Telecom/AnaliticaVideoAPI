@@ -28,7 +28,7 @@ export class IncidenciasGateway
   }
 
   emitNuevaIncidencia(incidencia: any) {
-    console.log(incidencia,"EL SOCKET")
+    console.log(incidencia,"EL")
     this.server.emit('nueva-incidencia', incidencia);
   }
 }
