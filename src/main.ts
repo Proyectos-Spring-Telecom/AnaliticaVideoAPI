@@ -43,7 +43,7 @@ async function bootstrap() {
         description: 'Introduce tu token JWT aquí',
       },
       'access-token',
-    ).addServer('http://localhost:3000/api','local').addServer('http://216.238.90.14:3000/api','produccion')
+    ).addServer('http://localhost:3000/api','local').addServer('https://springtelecom.mx/analiticaVideoAPI/api','produccion')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
