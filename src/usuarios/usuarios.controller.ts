@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 import { UsuariosService } from './usuarios.service';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { UpdateUsuarioContrasena } from './dto/update-usuario-contrasena.dto';
 import { ApiCrudResponse, ApiResponseCommon } from 'src/common/ApiResponse';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
@@ -16,9 +18,26 @@ export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
     @Post()
+    @UseInterceptors(
+      FileInterceptor('fotoPerfil', {
+        storage: multer.memoryStorage(),
+        limits: { fileSize: 10 * 1024 * 1024 }, // máximo 10 MB
+        fileFilter: (req, file, cb) => {
+          const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+          if (!allowedTypes.includes(file.mimetype)) {
+            return cb(
+              new Error('Solo se permiten PNG, JPG o JPEG para foto de perfil'),
+              false,
+            );
+          }
+          cb(null, true);
+        },
+      }),
+    )
+    @ApiConsumes('multipart/form-data')
     @ApiOperation({ 
       summary: 'Crear nuevo usuario',
-      description: 'Crea un nuevo usuario en el sistema. Requiere autenticación JWT. El usuario recibirá un correo de confirmación.'
+      description: 'Crea un nuevo usuario en el sistema. Requiere autenticación JWT. El usuario recibirá un correo de confirmación. Puede incluir una foto de perfil.'
     })
     @ApiBody({ type: CreateUsuarioDto })
     @ApiResponse({ 
@@ -39,10 +58,11 @@ export class UsuariosController {
     @ApiResponse({ status: 401, description: 'No autorizado' })
     async createUsuario(
       @Body() createUsuarioDto: CreateUsuarioDto,
+      @UploadedFile() fotoPerfil: Express.Multer.File,
       @Req() req
     ): Promise<ApiCrudResponse> {
       const idUser = req.user.userId;
-      return await this.usuariosService.createUsuario(createUsuarioDto, idUser);
+      return await this.usuariosService.createUsuario(createUsuarioDto, idUser, fotoPerfil);
     }
   
     // ========================================
@@ -251,9 +271,26 @@ export class UsuariosController {
     );
   }
   @Put(':id')
+  @UseInterceptors(
+    FileInterceptor('fotoPerfil', {
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 }, // máximo 10 MB
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        if (!allowedTypes.includes(file.mimetype)) {
+          return cb(
+            new Error('Solo se permiten PNG, JPG o JPEG para foto de perfil'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({ 
     summary: 'Actualizar información completa del usuario',
-    description: 'Actualiza la información de un usuario existente, incluyendo datos personales, rol, cliente y permisos.'
+    description: 'Actualiza la información de un usuario existente, incluyendo datos personales, rol, cliente y permisos. Puede incluir una nueva foto de perfil.'
   })
   @ApiParam({ name: 'id', description: 'ID del usuario a actualizar', example: 1, type: Number })
   @ApiBody({ type: UpdateUsuarioDto })
@@ -277,6 +314,7 @@ export class UsuariosController {
   async updateUsuario(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUsuarioDto: UpdateUsuarioDto,
+    @UploadedFile() fotoPerfil: Express.Multer.File,
     @Req() req,
   ): Promise<ApiCrudResponse> {
     const idUser = req.user.userId;
@@ -284,6 +322,7 @@ export class UsuariosController {
       id,
       updateUsuarioDto,
       idUser,
+      fotoPerfil,
     );
   }
 

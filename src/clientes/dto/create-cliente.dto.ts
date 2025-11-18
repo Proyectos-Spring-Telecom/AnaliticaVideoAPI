@@ -8,11 +8,13 @@ import {
   IsEmail,
   IsIn,
 } from "class-validator";
+import { Transform } from "class-transformer";
 
 export class CreateClienteDto {
   @IsOptional()
+  @Transform(({ value }) => (value ? parseInt(value) : undefined))
   @IsInt({ message: "IdPadre debe ser un número entero" })
-  @ApiProperty({ description: "Id del cliente padre", example: 1, required: false })
+  @ApiProperty({ description: "Id del cliente padre", example: 1, required: false, type: Number })
   idPadre?: number;
 
   @IsString()
@@ -21,9 +23,10 @@ export class CreateClienteDto {
   @ApiProperty({ description: "RFC del cliente (Registro Federal de Contribuyentes)", example: "XAXX010101000", required: true })
   rfc: string;
 
+  @Transform(({ value }) => parseInt(value))
   @IsInt({ message: "TipoPersona debe ser un número entero (1=Física, 2=Moral)" })
   @IsIn([1, 2], { message: "TipoPersona debe ser 1 (Física) o 2 (Moral)" })
-  @ApiProperty({ description: "Tipo de persona (1=Física, 2=Moral)", example: 1, required: true, enum: [1, 2] })
+  @ApiProperty({ description: "Tipo de persona (1=Física, 2=Moral)", example: 1, required: true, enum: [1, 2], type: Number })
   tipoPersona: number;
 
   @IsOptional()
@@ -128,35 +131,36 @@ export class CreateClienteDto {
   @ApiProperty({ description: "Correo electrónico del encargado", example: "encargado@correo.com", required: false })
   correoEncargado?: string;
 
-  // ⚡ Documentos
+  // ⚡ Documentos - Estos campos ahora se manejan como archivos, pero mantenemos los campos para URLs después de subir
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  @ApiProperty({ description: "Ruta o URL de la constancia de situación fiscal", example: "/documentos/constancia.pdf", required: false })
+  @ApiProperty({ description: "URL de la constancia de situación fiscal (se genera automáticamente al subir archivo)", example: "", required: false })
   constanciaSituacionFiscal?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  @ApiProperty({ description: "Ruta o URL del comprobante de domicilio", example: "/documentos/comprobante.pdf", required: false })
+  @ApiProperty({ description: "URL del comprobante de domicilio (se genera automáticamente al subir archivo)", example: "", required: false })
   comprobanteDomicilio?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  @ApiProperty({ description: "Ruta o URL del acta constitutiva (solo para personas morales)", example: "/documentos/acta.pdf", required: false })
+  @ApiProperty({ description: "URL del acta constitutiva (solo para personas morales, se genera automáticamente al subir archivo)", example: "", required: false })
   actaConstitutiva?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  @ApiProperty({ description: "Ruta o URL del logotipo del cliente", example: "/imagenes/logotipo.png", required: false })
+  @ApiProperty({ description: "URL del logotipo del cliente (se genera automáticamente al subir archivo)", example: "", required: false })
   logotipo?: string;
 
   // ⚡ Estatus
   @IsOptional()
+  @Transform(({ value }) => (value ? parseInt(value) : 1))
   @IsInt({ message: "Estatus debe ser 0 ó 1" })
   @IsIn([0, 1], { message: "Solo puede ser 0 ó 1" })
-  @ApiProperty({ description: "Estatus del cliente (0=Inactivo, 1=Activo)", example: 1, default: 1, required: false })
+  @ApiProperty({ description: "Estatus del cliente (0=Inactivo, 1=Activo)", example: 1, default: 1, required: false, type: Number })
   estatus?: number = 1;
 }

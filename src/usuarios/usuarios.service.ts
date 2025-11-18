@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Usuarios } from 'src/entities/Usuarios';
 import { Repository } from 'typeorm';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
+import { S3Service } from 'src/s3/s3.service';
 import { ClientesService } from 'src/clientes/clientes.service';
 import { UsuariosPermisos } from 'src/entities/UsuariosPermisos';
 import { UpdateUsuarioEstatusDto } from './dto/update-usuario-estatus.dto';
@@ -20,6 +21,7 @@ export class UsuariosService {
         @InjectRepository(Usuarios)
         private readonly usuarioRepository: Repository<Usuarios>,
         private readonly bitacoraLogger: BitacoraService,
+        private readonly s3Service: S3Service,
         private readonly clientesService: ClientesService,
         @InjectRepository(UsuariosPermisos)
         private usuariosPermisosRepository: Repository<UsuariosPermisos>,
@@ -460,6 +462,7 @@ export class UsuariosService {
       async createUsuario(
         createUsuarioDto: CreateUsuarioDto,
         idUser: string,
+        fotoPerfil?: Express.Multer.File,
       ): Promise<ApiCrudResponse> {
         try {
           const existUsuario = await this.usuarioRepository.findOne({
@@ -468,6 +471,12 @@ export class UsuariosService {
           });
           if (existUsuario) {
             throw new BadRequestException('El usuario ya existe');
+          }
+    
+          // Subir foto de perfil a S3 si existe
+          if (fotoPerfil) {
+            const uploadResult = await this.s3Service.uploadFile(fotoPerfil, 'Usuarios', Number(idUser), 2);
+            createUsuarioDto.fotoPerfil = uploadResult.url;
           }
     
           const hashedPassword = await bcrypt.hash(
@@ -651,6 +660,7 @@ export class UsuariosService {
         id: number,
         updateUsuarioDto: UpdateUsuarioDto,
         idUser: string,
+        fotoPerfil?: Express.Multer.File,
       ): Promise<ApiCrudResponse> {
         try {
           const usuario = await this.usuarioRepository.findOne({
@@ -658,6 +668,12 @@ export class UsuariosService {
           });
           if (!usuario) {
             throw new NotFoundException(`Usuario con ID:${id} no encontrado`);
+          }
+    
+          // Subir foto de perfil a S3 si existe (solo actualizar si se envía un nuevo archivo)
+          if (fotoPerfil) {
+            const uploadResult = await this.s3Service.uploadFile(fotoPerfil, 'Usuarios', Number(idUser), 2);
+            updateUsuarioDto.fotoPerfil = uploadResult.url;
           }
     
           if (updateUsuarioDto.idCliente) {

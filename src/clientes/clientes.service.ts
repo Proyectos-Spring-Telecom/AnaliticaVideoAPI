@@ -1,6 +1,7 @@
 import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
+import { S3Service } from 'src/s3/s3.service';
 import { Clientes } from 'src/entities/Clientes';
 import { Repository } from 'typeorm';
 import { CreateClienteDto } from './dto/create-cliente.dto';
@@ -14,11 +15,18 @@ export class ClientesService {
     @InjectRepository(Clientes)
     private readonly clienteRepository: Repository<Clientes>,
     private readonly bitacoraLogger: BitacoraService,
+    private readonly s3Service: S3Service,
   ) {}
   //Crear cliente
   async createCliente(
     createClienteDto: CreateClienteDto,
     idUser: number,
+    files?: {
+      logotipo?: Express.Multer.File[];
+      constanciaSituacionFiscal?: Express.Multer.File[];
+      comprobanteDomicilio?: Express.Multer.File[];
+      actaConstitutiva?: Express.Multer.File[];
+    },
   ): Promise<ApiCrudResponse> {
     try {
       const clienteCreate = await this.clienteRepository.findOne({
@@ -31,6 +39,25 @@ export class ClientesService {
           `Cliente ya registrado con RFC: ${createClienteDto.rfc}. Por favor, ingrese un RFC diferente.`,
         );
       }
+
+      // Subir archivos a S3 si existen
+      if (files?.logotipo && files.logotipo[0]) {
+        const uploadResult = await this.s3Service.uploadFile(files.logotipo[0], 'Clientes', idUser, 1);
+        createClienteDto.logotipo = uploadResult.url;
+      }
+      if (files?.constanciaSituacionFiscal && files.constanciaSituacionFiscal[0]) {
+        const uploadResult = await this.s3Service.uploadFile(files.constanciaSituacionFiscal[0], 'Clientes', idUser, 1);
+        createClienteDto.constanciaSituacionFiscal = uploadResult.url;
+      }
+      if (files?.comprobanteDomicilio && files.comprobanteDomicilio[0]) {
+        const uploadResult = await this.s3Service.uploadFile(files.comprobanteDomicilio[0], 'Clientes', idUser, 1);
+        createClienteDto.comprobanteDomicilio = uploadResult.url;
+      }
+      if (files?.actaConstitutiva && files.actaConstitutiva[0]) {
+        const uploadResult = await this.s3Service.uploadFile(files.actaConstitutiva[0], 'Clientes', idUser, 1);
+        createClienteDto.actaConstitutiva = uploadResult.url;
+      }
+
       const clienteData = await this.clienteRepository.create(createClienteDto);
       const clienteCreado = await this.clienteRepository.save(clienteData);
 
@@ -313,6 +340,12 @@ ORDER BY Id DESC;
     id: number,
     idUser: number,
     updateClienteDto: UpdateClienteDto,
+    files?: {
+      logotipo?: Express.Multer.File[];
+      constanciaSituacionFiscal?: Express.Multer.File[];
+      comprobanteDomicilio?: Express.Multer.File[];
+      actaConstitutiva?: Express.Multer.File[];
+    },
   ): Promise<ApiCrudResponse> {
     try {
       const Cliente = await this.clienteRepository.findOne({
@@ -323,6 +356,25 @@ ORDER BY Id DESC;
           `El cliente con ID: ${id} no fue encontrado.`,
         );
       }
+
+      // Subir archivos a S3 si existen (solo actualizar si se envía un nuevo archivo)
+      if (files?.logotipo && files.logotipo[0]) {
+        const uploadResult = await this.s3Service.uploadFile(files.logotipo[0], 'Clientes', idUser, 1);
+        updateClienteDto.logotipo = uploadResult.url;
+      }
+      if (files?.constanciaSituacionFiscal && files.constanciaSituacionFiscal[0]) {
+        const uploadResult = await this.s3Service.uploadFile(files.constanciaSituacionFiscal[0], 'Clientes', idUser, 1);
+        updateClienteDto.constanciaSituacionFiscal = uploadResult.url;
+      }
+      if (files?.comprobanteDomicilio && files.comprobanteDomicilio[0]) {
+        const uploadResult = await this.s3Service.uploadFile(files.comprobanteDomicilio[0], 'Clientes', idUser, 1);
+        updateClienteDto.comprobanteDomicilio = uploadResult.url;
+      }
+      if (files?.actaConstitutiva && files.actaConstitutiva[0]) {
+        const uploadResult = await this.s3Service.uploadFile(files.actaConstitutiva[0], 'Clientes', idUser, 1);
+        updateClienteDto.actaConstitutiva = uploadResult.url;
+      }
+
       const clienteData = await this.clienteRepository.create(updateClienteDto);
       await this.clienteRepository.update(id, clienteData);
 
