@@ -5,8 +5,9 @@ export class UpdateUsuarioContrasena {
   @IsString()
   @IsNotEmpty({ message: 'El Password es obligatorio' })
   @ApiProperty({
-    description: 'Contraseña del usuario',
-    example: 'P@ssword123',
+    description: 'Contraseña actual del usuario',
+    example: 'OldP@ssword123',
+    required: true
   })
   passwordActual: string;
 
@@ -18,8 +19,9 @@ export class UpdateUsuarioContrasena {
       'El Password debe contener al menos una letra (UTF-8), un número y un símbolo común (@$!%*?&.)',
   })
   @ApiProperty({
-    description: 'Contraseña del usuario',
-    example: 'P@ssword123',
+    description: 'Nueva contraseña del usuario. Debe contener al menos una letra, un número y un símbolo (@$!%*?&.)',
+    example: 'NewP@ssword123',
+    required: true
   })
   passwordNueva: string;
 
@@ -31,8 +33,9 @@ export class UpdateUsuarioContrasena {
       'El Password debe contener al menos una letra (UTF-8), un número y un símbolo común (@$!%*?&.)',
   })
   @ApiProperty({
-    description: 'Contraseña del usuario',
-    example: 'P@ssword123',
+    description: 'Confirmación de la nueva contraseña. Debe coincidir con passwordNueva',
+    example: 'NewP@ssword123',
+    required: true
   })
   passwordNuevaConfirmacion: string;
 

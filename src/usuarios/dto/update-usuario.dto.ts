@@ -92,5 +92,11 @@ import {
     @IsOptional()
     @IsArray()
     @IsNumber({}, { each: true })
+    @ApiProperty({
+      description: 'Array de IDs de permisos asignados al usuario',
+      example: [1, 2, 3, 5],
+      type: [Number],
+      required: false
+    })
     permisosIds?: number[];
   }
