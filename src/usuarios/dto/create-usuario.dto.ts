@@ -106,13 +106,19 @@ export class CreateUsuarioDto {
   @ApiProperty({ description: 'Rol asignado', example: 2 })
   idRol: number;
 
-  @IsInt()
-  @ApiProperty({ description: 'Cliente asignado', example: 5 })
   @IsOptional()
+  @IsInt()
+  @ApiProperty({ description: 'Cliente asignado', example: 5, required: false })
   idCliente?: number;
 
   @IsNotEmpty()
   @IsArray()
   @IsNumber({}, { each: true })
+  @ApiProperty({
+    description: 'Array de IDs de permisos asignados al usuario',
+    example: [1, 2, 3, 5],
+    type: [Number],
+    required: true
+  })
   permisosIds: number[];
 }
