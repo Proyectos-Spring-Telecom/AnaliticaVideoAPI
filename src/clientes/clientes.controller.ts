@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Req, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 import { ClientesService } from './clientes.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { ApiCrudResponse, ApiResponseCommon } from 'src/common/ApiResponse';
 import { UpdateClienteEstatusDto } from './dto/update-cliente-estatus.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
@@ -13,9 +15,44 @@ export class ClientesController {
   constructor(private readonly clientesService: ClientesService) {}
   //Crear cliente
   @Post()
-  async createCliente(@Body() createClienteDto: CreateClienteDto, @Req() req): Promise<ApiCrudResponse> {
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'logotipo', maxCount: 1 },
+        { name: 'constanciaSituacionFiscal', maxCount: 1 },
+        { name: 'comprobanteDomicilio', maxCount: 1 },
+        { name: 'actaConstitutiva', maxCount: 1 },
+      ],
+      {
+        storage: multer.memoryStorage(),
+        limits: { fileSize: 10 * 1024 * 1024 }, // máximo 10 MB
+        fileFilter: (req, file, cb) => {
+          const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+          if (!allowedTypes.includes(file.mimetype)) {
+            return cb(
+              new Error('Solo se permiten PNG, JPG, JPEG o PDF'),
+              false,
+            );
+          }
+          cb(null, true);
+        },
+      },
+    ),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: CreateClienteDto })
+  async createCliente(
+    @Body() createClienteDto: CreateClienteDto,
+    @UploadedFiles() files: {
+      logotipo?: Express.Multer.File[];
+      constanciaSituacionFiscal?: Express.Multer.File[];
+      comprobanteDomicilio?: Express.Multer.File[];
+      actaConstitutiva?: Express.Multer.File[];
+    },
+    @Req() req,
+  ): Promise<ApiCrudResponse> {
     const idUser = req.user.userId;
-    return await this.clientesService.createCliente(createClienteDto, idUser);
+    return await this.clientesService.createCliente(createClienteDto, idUser, files);
   }
     //Obtener todos los clientes
   @Get('list')
@@ -64,13 +101,45 @@ export class ClientesController {
 
   //Actualizar un cliente
   @Put(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'logotipo', maxCount: 1 },
+        { name: 'constanciaSituacionFiscal', maxCount: 1 },
+        { name: 'comprobanteDomicilio', maxCount: 1 },
+        { name: 'actaConstitutiva', maxCount: 1 },
+      ],
+      {
+        storage: multer.memoryStorage(),
+        limits: { fileSize: 10 * 1024 * 1024 }, // máximo 10 MB
+        fileFilter: (req, file, cb) => {
+          const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+          if (!allowedTypes.includes(file.mimetype)) {
+            return cb(
+              new Error('Solo se permiten PNG, JPG, JPEG o PDF'),
+              false,
+            );
+          }
+          cb(null, true);
+        },
+      },
+    ),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateClienteDto })
   async updateCliente(
     @Param('id') id: string,
     @Req() req,
     @Body() updateClienteDto: UpdateClienteDto,
+    @UploadedFiles() files: {
+      logotipo?: Express.Multer.File[];
+      constanciaSituacionFiscal?: Express.Multer.File[];
+      comprobanteDomicilio?: Express.Multer.File[];
+      actaConstitutiva?: Express.Multer.File[];
+    },
   ): Promise<ApiCrudResponse> {
     const idUser = req.user.userId;
-    return await this.clientesService.updateCliente(+id, idUser, updateClienteDto);
+    return await this.clientesService.updateCliente(+id, idUser, updateClienteDto, files);
   }
 
   //Eliminar Cliente

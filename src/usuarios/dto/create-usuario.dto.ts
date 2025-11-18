@@ -12,6 +12,7 @@ import {
   IsNumber,
   Matches,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateUsuarioDto {
   @IsString()
@@ -35,11 +36,13 @@ export class CreateUsuarioDto {
   })
   passwordHash: string;
 
+  @Transform(({ value }) => parseInt(value))
   @IsInt()
   @IsIn([0, 1], { message: 'Solo se permite 0 o 1' })
   @ApiProperty({
     description: 'Confirmación de email (0=No, 1=Sí)',
     example: 0,
+    type: Number,
   })
   emailConfirmado: number;
 
@@ -90,29 +93,43 @@ export class CreateUsuarioDto {
 
   @IsOptional()
   @IsString()
-  @ApiProperty({ description: 'Foto de perfil', required: false })
+  @ApiProperty({ description: 'URL de la foto de perfil (se genera automáticamente al subir archivo)', required: false })
   fotoPerfil?: string;
 
   @IsOptional()
+  @Transform(({ value }) => (value ? parseInt(value) : 1))
   @IsInt()
   @IsIn([0, 1], { message: 'Solo se permite 0 o 1' })
   @ApiProperty({
     description: 'Estatus del usuario (1=Activo, 0=Inactivo)',
     example: 1,
+    type: Number,
   })
   estatus?: number = 1;
 
+  @Transform(({ value }) => parseInt(value))
   @IsInt()
-  @ApiProperty({ description: 'Rol asignado', example: 2 })
+  @ApiProperty({ description: 'Rol asignado', example: 2, type: Number })
   idRol: number;
 
   @IsOptional()
+  @Transform(({ value }) => (value ? parseInt(value) : undefined))
   @IsInt()
-  @ApiProperty({ description: 'Cliente asignado', example: 5, required: false })
+  @ApiProperty({ description: 'Cliente asignado', example: 5, required: false, type: Number })
   idCliente?: number;
 
   @IsNotEmpty()
   @IsArray()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value).map(Number);
+      } catch {
+        return value.split(',').map(Number);
+      }
+    }
+    return Array.isArray(value) ? value.map(Number) : [Number(value)];
+  })
   @IsNumber({}, { each: true })
   @ApiProperty({
     description: 'Array de IDs de permisos asignados al usuario',
