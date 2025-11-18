@@ -77,7 +77,7 @@ export class IncidenciasService {
     }
   }
 
-  async getIncidencias() {
+  async getIncidencias(numeroSerie: string) {
     try {
       const incidencias = await this.incidenciaRepository
         .createQueryBuilder('i')
@@ -92,6 +92,7 @@ export class IncidenciasService {
           'DATE_FORMAT(i.fecha, "%Y-%m-%d %H:%i:%s") AS fecha',
         ])
         .where('i.fecha >= CURDATE()')
+        .andWhere('i.idDispositivo = :numeroSerie', { numeroSerie })
         .orderBy('i.fecha', 'DESC')
         .getRawMany();
 
@@ -101,9 +102,10 @@ export class IncidenciasService {
     }
   }
 
-  async findUltimoHit(): Promise<any> {
+  async findUltimoHit(numeroSerie: string): Promise<any> {
     try {
       const incidencia = await this.incidenciaRepository.find({
+        where: { idDispositivo: numeroSerie },
         order: { fecha: 'DESC' },
         take: 1,
       });
@@ -131,7 +133,7 @@ export class IncidenciasService {
     }
   }
 
-    async findByRango(fechaInicio: string, fechaFin: string): Promise<any[]> {
+    async findByRango(numeroSerie: string, fechaInicio: string, fechaFin: string): Promise<any[]> {
     try {
       if (!fechaInicio || !fechaFin) {
         throw new BadRequestException(
@@ -143,9 +145,12 @@ export class IncidenciasService {
       const inicio = new Date(`${fechaInicio} 00:00:00`);
       const fin = new Date(`${fechaFin} 23:59:59`);
 
-      // Buscar incidencias en el rango
+      // Buscar incidencias en el rango filtradas por idDispositivo
       const incidencias = await this.incidenciaRepository.find({
-        where: { fecha: Between(inicio, fin) },
+        where: { 
+          fecha: Between(inicio, fin),
+          idDispositivo: numeroSerie
+        },
         order: { fecha: 'DESC' },
       });
 
@@ -174,6 +179,7 @@ export class IncidenciasService {
   }
 
   async findByRangoPaginado(
+    numeroSerie: string,
     fechaInicio: string,
     fechaFin: string,
     page: number ,
@@ -196,9 +202,12 @@ export class IncidenciasService {
       const fin = new Date(`${fechaFin} 23:59:59`);
       const skip = (page - 1) * limit;
 
-      // Consulta principal
+      // Consulta principal filtrada por idDispositivo
       const [data, total] = await this.incidenciaRepository.findAndCount({
-        where: { fecha: Between(inicio, fin) },
+        where: { 
+          fecha: Between(inicio, fin),
+          idDispositivo: numeroSerie
+        },
         order: { fecha: 'DESC' },
         skip,
         take: limit,
@@ -243,7 +252,7 @@ export class IncidenciasService {
     }
   }
 
-    async findPorHora(fecha: string): Promise<any[]> {
+    async findPorHora(numeroSerie: string, fecha: string): Promise<any[]> {
     try {
       if (!fecha) {
         throw new BadRequestException('Fecha requerida en formato YYYY-MM-DD');
@@ -257,11 +266,11 @@ export class IncidenciasService {
             genero,
             COUNT(*) AS cantidad
           FROM Incidencias
-          WHERE DATE(fecha) = ?
+          WHERE DATE(fecha) = ? AND IdDispositivo = ?
           GROUP BY genero, hora
           ORDER BY hora ASC
         `,
-        [fecha],
+        [fecha, numeroSerie],
       );
 
       // Estructura de salida: 00 a 23 horas
@@ -289,7 +298,7 @@ export class IncidenciasService {
     }
   }
 
-  async findPorHoraRango(fechaInicio: string, fechaFin: string): Promise<any[]> {
+  async findPorHoraRango(numeroSerie: string, fechaInicio: string, fechaFin: string): Promise<any[]> {
     try {
       if (!fechaInicio || !fechaFin) {
         throw new BadRequestException(
@@ -304,11 +313,11 @@ export class IncidenciasService {
               genero,
               COUNT(*) AS cantidad
           FROM Incidencias
-          WHERE DATE(fecha) BETWEEN ? AND ?
+          WHERE DATE(fecha) BETWEEN ? AND ? AND IdDispositivo = ?
           GROUP BY genero, hora
           ORDER BY hora ASC
         `,
-        [fechaInicio, fechaFin],
+        [fechaInicio, fechaFin, numeroSerie],
       );
 
       // Generar estructura 00:00 a 23:00

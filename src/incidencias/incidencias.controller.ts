@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { IncidenciasService } from './incidencias.service';
 import { ApiCrudResponse } from 'src/common/ApiResponse';
 import { CreateIncidenciaDto } from './dto/create-incidencia.dto';
@@ -13,33 +13,36 @@ export class IncidenciasController {
   ) {
     return await this.incidenciasService.create(createIncidenciaDto, 1);
   }
-  @Get('/hoy')
-  async getIncidencias() {
-    return await this.incidenciasService.getIncidencias();
+  @Get('/hoy/:numeroSerie')
+  async getIncidencias(@Param('numeroSerie') numeroSerie: string) {
+    return await this.incidenciasService.getIncidencias(numeroSerie);
   }
 
 
-  @Get('ultimo-hit')
-  async getUltimoHit() {
-    return await this.incidenciasService.findUltimoHit();
+  @Get('ultimo-hit/:numeroSerie')
+  async getUltimoHit(@Param('numeroSerie') numeroSerie: string) {
+    return await this.incidenciasService.findUltimoHit(numeroSerie);
   }
 
-  @Get('rango')
+  @Get('rango/:numeroSerie')
   async getByRango(
+    @Param('numeroSerie') numeroSerie: string,
     @Query('fechaInicio') fechaInicio: string,
     @Query('fechaFin') fechaFin: string,
   ) {
-    return await this.incidenciasService.findByRango(fechaInicio, fechaFin);
+    return await this.incidenciasService.findByRango(numeroSerie, fechaInicio, fechaFin);
   }
 
-  @Get('rango-paginado')
+  @Get('rango-paginado/:numeroSerie')
   async getByRangoPaginado(
+    @Param('numeroSerie') numeroSerie: string,
     @Query('fechaInicio') fechaInicio: string,
     @Query('fechaFin') fechaFin: string,
     @Query('page') page: number,
     @Query('limit') limit: number,
   ) {
     return await this.incidenciasService.findByRangoPaginado(
+      numeroSerie,
       fechaInicio,
       fechaFin,
       Number(page),
@@ -47,16 +50,20 @@ export class IncidenciasController {
     );
   }
 
-    @Get('por-hora')
-  async getPorHora(@Query('fecha') fecha: string) {
-    return await this.incidenciasService.findPorHora(fecha);
+    @Get('por-hora/:numeroSerie')
+  async getPorHora(
+    @Param('numeroSerie') numeroSerie: string,
+    @Query('fecha') fecha: string
+  ) {
+    return await this.incidenciasService.findPorHora(numeroSerie, fecha);
   }
 
-    @Get('por-hora-rango')
+    @Get('por-hora-rango/:numeroSerie')
   async getPorHoraRango(
+    @Param('numeroSerie') numeroSerie: string,
     @Query('fechaInicio') fechaInicio: string,
     @Query('fechaFin') fechaFin: string,
   ) {
-    return await this.incidenciasService.findPorHoraRango(fechaInicio, fechaFin);
+    return await this.incidenciasService.findPorHoraRango(numeroSerie, fechaInicio, fechaFin);
   }
 }
