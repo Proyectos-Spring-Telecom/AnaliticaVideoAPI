@@ -44,7 +44,7 @@ export class InstalacionCentralService {
 
   async findAll() {
     try {
-      const data = await this.instalacionCentralRepository.find({ relations: ['cliente', 'instalaciones'] });
+      const data = await this.instalacionCentralRepository.find({         relations: ['cliente', 'instalaciones','instalaciones.cliente','instalaciones.instalacionCentral','instalaciones.instalacionCentral.cliente'] });
       const mappedData = data.map(({ cliente, ...rest }) => {
         const c = cliente;
 
@@ -89,7 +89,7 @@ export class InstalacionCentralService {
 
       // Obtener datos y total
       const [data, total] = await this.instalacionCentralRepository.findAndCount({
-        relations: ['cliente', 'instalaciones'],
+        relations: ['cliente', 'instalaciones','instalaciones.cliente','instalaciones.instalacionCentral','instalaciones.instalacionCentral.cliente'],
         skip,
         take: limit,
         order: { id: 'ASC' }, // puedes cambiar el orden si quieres

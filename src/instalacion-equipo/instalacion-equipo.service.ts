@@ -50,6 +50,7 @@ export class InstalacionEquipoService {
         };
         return result;
      } catch (error) {
+      console.log(error)
       if (error instanceof HttpException) {
         throw error;
       }
@@ -58,7 +59,7 @@ export class InstalacionEquipoService {
 
   async findAll() {
     try {
-       const data = await this.instalacionEquipo.find({relations:['equipo','instalacionCentral']})
+       const data = await this.instalacionEquipo.find({relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo']})
        return data;
     } catch (error) {
       

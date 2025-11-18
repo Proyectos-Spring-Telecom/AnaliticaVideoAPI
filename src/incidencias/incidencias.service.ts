@@ -3,18 +3,74 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Incidencia } from "src/entities/Incidencias";
 import { Between, Repository } from "typeorm";
 import { CreateIncidenciaDto } from "./dto/create-incidencia.dto";
+import { IncidenciasGateway } from "./incidencias.gateway";
 
 @Injectable()
 export class IncidenciasService {
   constructor(
     @InjectRepository(Incidencia)
-    private readonly incidenciaRepository: Repository<Incidencia>
+    private readonly incidenciaRepository: Repository<Incidencia>,
+    private readonly incidenciasGateway: IncidenciasGateway
   ) { }
 
   async create(createIncidenciaDto: CreateIncidenciaDto, idUser: number) {
     try {
-      const save = await this.incidenciaRepository.create(createIncidenciaDto);
-      const created = await this.incidenciaRepository.save(save);
+      // Preparar la fecha: quitar el 'Z' o offset de zona horaria para que MySQL la interprete como hora local
+      let fechaParaBD: string;
+      if (createIncidenciaDto.fecha) {
+        // Quitar 'Z', '+00:00', '-06:00', etc. y dejar solo la fecha y hora
+        fechaParaBD = createIncidenciaDto.fecha.replace('T', ' ').replace(/[Z+-]\d{2}:\d{2}$/, '').substring(0, 19);
+      } else {
+        // Si no viene fecha, usar la actual en formato local
+        const ahora = new Date();
+        fechaParaBD = ahora.toISOString().replace('T', ' ').substring(0, 19);
+      }
+      
+      const query = `
+        INSERT INTO Incidencias (Genero, Edad, EstadoAnimo, TiempoEnEscena, Foto, FotoProceso, Fecha, IdDispositivo)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      
+      const result = await this.incidenciaRepository.query(query, [
+        createIncidenciaDto.genero,
+        createIncidenciaDto.edad,
+        createIncidenciaDto.estadoAnimo,
+        createIncidenciaDto.tiempoEnEscena || null,
+        createIncidenciaDto.foto || null,
+        createIncidenciaDto.fotoProceso || null,
+        fechaParaBD,
+        createIncidenciaDto.idDispositivo,
+      ]);
+      
+      // Obtener la incidencia creada
+      const created = await this.incidenciaRepository.findOne({
+        where: { id: result.insertId }
+      });
+      
+      if (!created) {
+        throw new BadRequestException('Error al crear la incidencia');
+      }
+      
+      // Formatear la incidencia para el evento
+      const incidenciaFormateada = {
+        id: created.id,
+        genero: created.genero,
+        edad: created.edad,
+        estadoAnimo: created.estadoAnimo,
+        idDispositivo: created.idDispositivo,
+        tiempoEnEscena: created.tiempoEnEscena,
+        foto: created.foto,
+        fecha: created.fecha
+          ? new Date(created.fecha).toLocaleString('es-MX', {
+              timeZone: 'America/Mexico_City',
+              hour12: false
+            }).replace(',', '')
+          : null,
+      };
+      
+      // Emitir evento de nueva incidencia a través de socket.io
+      this.incidenciasGateway.emitNuevaIncidencia(incidenciaFormateada);
+      
       return created;
     } catch (error) {
       throw new BadRequestException(error);
@@ -51,7 +107,7 @@ export class IncidenciasService {
         order: { fecha: 'DESC' },
         take: 1,
       });
-
+      console.log(incidencia,"hit")
       if (incidencia.length === 0) return null;
 
       const i = incidencia[0];
