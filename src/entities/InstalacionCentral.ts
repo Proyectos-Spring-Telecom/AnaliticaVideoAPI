@@ -14,6 +14,9 @@ export class InstalacionCentral {
   @PrimaryGeneratedColumn({ type: "bigint" })
   id: number;
 
+  @Column({ type: "varchar", name: "Nombre", length: 255, nullable: true })
+  nombre: string;
+
   @Column({ type: "bigint", name: "IdCliente" })
   idCliente: number;
 

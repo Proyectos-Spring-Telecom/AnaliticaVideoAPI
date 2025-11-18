@@ -32,9 +32,9 @@ export class InstalacionCentralService {
         message: 'La instalación central ha sido creada correctamente.',
         data: {
           id: instalacionGuardada.id,
-          nombre: `${createInstalacionCentralDto.lat} ${createInstalacionCentralDto.lng}` || '',
-
-        },
+          nombre: createInstalacionCentralDto.nombre || `${createInstalacionCentralDto.lat} ${createInstalacionCentralDto.lng}` || '',
+          nombreInstalacionCentral: instalacionGuardada.nombre || createInstalacionCentralDto.nombre || `${createInstalacionCentralDto.lat} ${createInstalacionCentralDto.lng}` || '',
+        } as any,
       };
       return result;
     } catch (error) {
@@ -67,6 +67,7 @@ export class InstalacionCentralService {
           ...rest,
           id: Number(rest.id),
           idCliente: Number(rest.idCliente),
+          nombreInstalacionCentral: rest.nombre || null,
           nombreCliente,
           direccion,
           nombreEncargado: c?.nombreEncargado || null,
@@ -119,6 +120,7 @@ export class InstalacionCentralService {
           ...rest,
           id: Number(rest.id),
           idCliente: Number(rest.idCliente),
+          nombreInstalacionCentral: rest.nombre || null,
           nombreCliente,
           direccion,
           nombreEncargado: c?.nombreEncargado || null,
@@ -150,7 +152,14 @@ export class InstalacionCentralService {
       if (!data) {
         throw new ConflictException(`La instalacion con el id ${id} no existe`);
       }
-      return data;
+      
+      // Agregar nombreInstalacionCentral a la respuesta
+      const response = {
+        ...data,
+        nombreInstalacionCentral: data.nombre || null,
+      };
+      
+      return response;
     } catch (error) {
       if (error instanceof ConflictException) throw error;
 
@@ -166,14 +175,15 @@ export class InstalacionCentralService {
         throw new ConflictException(`La instalacion con el id ${id} no existe`);
       }
       await this.instalacionCentralRepository.update(id, updateInstalacionCentralDto);
+      const instalacionActualizada = await this.instalacionCentralRepository.findOne({ where: { id: id } });
       const result: ApiCrudResponse = {
         status: 'success',
         message: 'La instalación central ha sido actualizada correctamente.',
         data: {
           id: id,
-          nombre: `${updateInstalacionCentralDto.lat} ${updateInstalacionCentralDto.lng}` || '',
-
-        },
+          nombre: updateInstalacionCentralDto.nombre || `${updateInstalacionCentralDto.lat} ${updateInstalacionCentralDto.lng}` || '',
+          nombreInstalacionCentral: instalacionActualizada?.nombre || updateInstalacionCentralDto.nombre || null,
+        } as any,
       };
       return result
     } catch (error) {
@@ -194,8 +204,9 @@ export class InstalacionCentralService {
         message: 'La instalación central ha sido inhabilitada correctamente.',
         data: {
           id: id,
-          nombre: `${instalacion.lat} ${instalacion.lng}` || '',
-        },
+          nombre: instalacion.nombre || `${instalacion.lat} ${instalacion.lng}` || '',
+          nombreInstalacionCentral: instalacion.nombre || null,
+        } as any,
       };
       return result;
     } catch (error) {
@@ -215,8 +226,9 @@ export class InstalacionCentralService {
         message: 'La instalación central ha sido habilitada correctamente.',
         data: {
           id: id,
-          nombre: `${instalacion.lat} ${instalacion.lng}` || '',
-        },
+          nombre: instalacion.nombre || `${instalacion.lat} ${instalacion.lng}` || '',
+          nombreInstalacionCentral: instalacion.nombre || null,
+        } as any,
       };
       return result;
     } catch (error) {
