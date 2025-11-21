@@ -131,30 +131,42 @@ export class CreateClienteDto {
   @ApiProperty({ description: "Correo electrónico del encargado", example: "encargado@correo.com", required: false })
   correoEncargado?: string;
 
-  // ⚡ Documentos - Estos campos ahora se manejan como archivos, pero mantenemos los campos para URLs después de subir
+  // ⚡ Documentos - Campos de archivo para Swagger (estos campos son solo para documentación, los archivos se reciben por @UploadedFiles)
   @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  @ApiProperty({ description: "URL de la constancia de situación fiscal (se genera automáticamente al subir archivo)", example: "", required: false })
-  constanciaSituacionFiscal?: string;
+  @ApiProperty({ 
+    description: "Logotipo del cliente (PNG, JPG, JPEG o PDF, máximo 10MB). Se subirá automáticamente a S3.", 
+    type: 'string',
+    format: 'binary',
+    required: false 
+  })
+  logotipo?: any;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  @ApiProperty({ description: "URL del comprobante de domicilio (se genera automáticamente al subir archivo)", example: "", required: false })
-  comprobanteDomicilio?: string;
+  @ApiProperty({ 
+    description: "Constancia de situación fiscal (PNG, JPG, JPEG o PDF, máximo 10MB). Se subirá automáticamente a S3.", 
+    type: 'string',
+    format: 'binary',
+    required: false 
+  })
+  constanciaSituacionFiscal?: any;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  @ApiProperty({ description: "URL del acta constitutiva (solo para personas morales, se genera automáticamente al subir archivo)", example: "", required: false })
-  actaConstitutiva?: string;
+  @ApiProperty({ 
+    description: "Comprobante de domicilio (PNG, JPG, JPEG o PDF, máximo 10MB). Se subirá automáticamente a S3.", 
+    type: 'string',
+    format: 'binary',
+    required: false 
+  })
+  comprobanteDomicilio?: any;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  @ApiProperty({ description: "URL del logotipo del cliente (se genera automáticamente al subir archivo)", example: "", required: false })
-  logotipo?: string;
+  @ApiProperty({ 
+    description: "Acta constitutiva - solo para personas morales (PNG, JPG, JPEG o PDF, máximo 10MB). Se subirá automáticamente a S3.", 
+    type: 'string',
+    format: 'binary',
+    required: false 
+  })
+  actaConstitutiva?: any;
 
   // ⚡ Estatus
   @IsOptional()

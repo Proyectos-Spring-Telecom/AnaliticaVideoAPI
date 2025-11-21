@@ -6,7 +6,7 @@ import { CreateClienteDto } from './dto/create-cliente.dto';
 import { ApiCrudResponse, ApiResponseCommon } from 'src/common/ApiResponse';
 import { UpdateClienteEstatusDto } from './dto/update-cliente-estatus.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
-import { ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
@@ -40,7 +40,10 @@ export class ClientesController {
     ),
   )
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: CreateClienteDto })
+  @ApiBody({ 
+    type: CreateClienteDto,
+    description: 'Datos del cliente con archivos opcionales'
+  })
   async createCliente(
     @Body() createClienteDto: CreateClienteDto,
     @UploadedFiles() files: {
@@ -125,8 +128,21 @@ export class ClientesController {
       },
     ),
   )
+  @ApiOperation({
+    summary: 'Actualizar información completa del cliente',
+    description: 'Actualiza la información de un cliente existente. Puede incluir archivos opcionales (logotipo, constancia de situación fiscal, comprobante de domicilio, acta constitutiva). Los archivos se subirán automáticamente a S3.'
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID del cliente a actualizar', 
+    example: 1, 
+    type: Number 
+  })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: UpdateClienteDto })
+  @ApiBody({ 
+    type: UpdateClienteDto,
+    description: 'Datos del cliente a actualizar con archivos opcionales. Todos los campos son opcionales excepto que se debe enviar al menos un campo para actualizar.'
+  })
   async updateCliente(
     @Param('id') id: string,
     @Req() req,
