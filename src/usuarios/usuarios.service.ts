@@ -462,7 +462,7 @@ export class UsuariosService {
       async createUsuario(
         createUsuarioDto: CreateUsuarioDto,
         idUser: string,
-        fotoPerfil?: Express.Multer.File,
+        fotoPerfilFile?: Express.Multer.File,
       ): Promise<ApiCrudResponse> {
         try {
           const existUsuario = await this.usuarioRepository.findOne({
@@ -474,8 +474,8 @@ export class UsuariosService {
           }
     
           // Subir foto de perfil a S3 si existe
-          if (fotoPerfil) {
-            const uploadResult = await this.s3Service.uploadFile(fotoPerfil, 'Usuarios', Number(idUser), 2);
+          if (fotoPerfilFile) {
+            const uploadResult = await this.s3Service.uploadFile(fotoPerfilFile, 'Usuarios', Number(idUser), 2);
             createUsuarioDto.fotoPerfil = uploadResult.url;
           }
     
@@ -513,7 +513,13 @@ export class UsuariosService {
           await this.emailService.sendConfirmationEmail(userSave.userName, name,token);
     
           //-----Registro en la bitacora----- SUCCESS
-          const querylogger = { createUsuarioDto };  
+          // Excluir campos sensibles y de archivo para evitar exceder el límite del campo Query y por seguridad
+          const { passwordHash, fotoPerfil, ...usuarioDtoSinSensibles } = createUsuarioDto;
+          // Convertir a objeto plano para evitar problemas de serialización
+          const querylogger = JSON.parse(JSON.stringify({ 
+            createUsuarioDto: usuarioDtoSinSensibles,
+            fotoPerfilSubida: fotoPerfil ? 'Sí' : 'No',
+          }));  
           await this.bitacoraLogger.logToBitacora(
             'Usuarios',
             `Se creó un usuarios con nombre: ${createUsuarioDto.nombre}`,
@@ -539,11 +545,17 @@ export class UsuariosService {
           };
           return result;
         } catch (error) {
-          //-----Registro en la bitacora----- SUCCESS
-          const querylogger = { createUsuarioDto };
+          //-----Registro en la bitacora----- ERROR
+          // Excluir campos sensibles y de archivo para evitar exceder el límite del campo Query y por seguridad
+          const { passwordHash, fotoPerfil, ...usuarioDtoSinSensibles } = createUsuarioDto;
+          // Convertir a objeto plano para evitar problemas de serialización
+          const querylogger = JSON.parse(JSON.stringify({ 
+            createUsuarioDto: usuarioDtoSinSensibles,
+            fotoPerfilSubida: fotoPerfil ? 'Sí' : 'No',
+          }));
           await this.bitacoraLogger.logToBitacora(
             'Usuarios',
-            `Se creó un usuarios con nombre: ${createUsuarioDto.nombre}`,
+            `Error al crear usuario con nombre: ${createUsuarioDto.nombre}`,
             'CREATE',
             querylogger,
             Number(idUser),
@@ -660,7 +672,7 @@ export class UsuariosService {
         id: number,
         updateUsuarioDto: UpdateUsuarioDto,
         idUser: string,
-        fotoPerfil?: Express.Multer.File,
+        fotoPerfilFile?: Express.Multer.File,
       ): Promise<ApiCrudResponse> {
         try {
           const usuario = await this.usuarioRepository.findOne({
@@ -671,8 +683,8 @@ export class UsuariosService {
           }
     
           // Subir foto de perfil a S3 si existe (solo actualizar si se envía un nuevo archivo)
-          if (fotoPerfil) {
-            const uploadResult = await this.s3Service.uploadFile(fotoPerfil, 'Usuarios', Number(idUser), 2);
+          if (fotoPerfilFile) {
+            const uploadResult = await this.s3Service.uploadFile(fotoPerfilFile, 'Usuarios', Number(idUser), 2);
             updateUsuarioDto.fotoPerfil = uploadResult.url;
           }
     
@@ -760,7 +772,13 @@ export class UsuariosService {
           }
     
           // ----- Registro en la bitácora ----- SUCCESS
-          const querylogger = { updateUsuarioDto };
+          // Excluir campos de archivo para evitar exceder el límite del campo Query
+          const { fotoPerfil, ...usuarioDtoSinArchivos } = updateUsuarioDto;
+          // Convertir a objeto plano para evitar problemas de serialización
+          const querylogger = JSON.parse(JSON.stringify({ 
+            updateUsuarioDto: usuarioDtoSinArchivos,
+            fotoPerfilSubida: fotoPerfilFile ? 'Sí' : 'No',
+          }));
           await this.bitacoraLogger.logToBitacora(
             'Usuarios',
             `Se actualizó el usuario: ${newUser.nombre} con ID: ${newUser.id}.`,
@@ -785,10 +803,16 @@ export class UsuariosService {
           return result;
         } catch (error) {
           // ----- Registro en la bitácora ----- ERROR
-          const querylogger = { updateUsuarioDto };
+          // Excluir campos de archivo para evitar exceder el límite del campo Query
+          const { fotoPerfil, ...usuarioDtoSinArchivos } = updateUsuarioDto;
+          // Convertir a objeto plano para evitar problemas de serialización
+          const querylogger = JSON.parse(JSON.stringify({ 
+            updateUsuarioDto: usuarioDtoSinArchivos,
+            fotoPerfilSubida: fotoPerfilFile ? 'Sí' : 'No',
+          }));
           await this.bitacoraLogger.logToBitacora(
             'Usuarios',
-            `Se actualizó el usuario con ID: ${id}.`,
+            `Error al actualizar usuario con ID: ${id}.`,
             'UPDATE',
             querylogger,
             Number(idUser),
