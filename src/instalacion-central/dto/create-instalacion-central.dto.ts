@@ -1,7 +1,17 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
 
 export class CreateInstalacionCentralDto {
+     @IsOptional()
+     @IsString()
+     @MaxLength(255)
+     @ApiProperty({
+        description: 'Nombre de la instalación central',
+        example: 'Sede Principal',
+        required: false,
+      })
+    nombre?: string;
+
      @ApiProperty({
         description: 'Id cliente de la instalación central',
         example: 1,

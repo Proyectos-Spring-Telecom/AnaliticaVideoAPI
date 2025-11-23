@@ -9,14 +9,17 @@ import {
     MaxLength,
   } from 'class-validator';
   import { ApiProperty } from '@nestjs/swagger';
+  import { Transform } from 'class-transformer';
   
   export class UpdateUsuarioDto {
-    @IsInt()
     @IsOptional()
+    @Transform(({ value }) => (value ? parseInt(value) : undefined))
+    @IsInt()
     @IsIn([0, 1], { message: 'Solo se permite 0 o 1' })
     @ApiProperty({
       description: 'Confirmación de email (0=No, 1=Sí)',
       example: 0,
+      type: Number,
     })
     emailConfirmado?: number;
   
@@ -67,30 +70,51 @@ import {
   
     @IsOptional()
     @IsString()
-    @ApiProperty({ description: 'Foto de perfil', required: false })
+    @ApiProperty({ description: 'URL de la foto de perfil (se genera automáticamente al subir archivo)', required: false })
     fotoPerfil?: string;
   
     @IsOptional()
+    @Transform(({ value }) => (value ? parseInt(value) : 1))
     @IsInt()
     @IsIn([0, 1], { message: 'Solo se permite 0 o 1' })
     @ApiProperty({
       description: 'Estatus del usuario (1=Activo, 0=Inactivo)',
       example: 1,
+      type: Number,
     })
     estatus?: number = 1;
   
     @IsOptional()
+    @Transform(({ value }) => (value ? parseInt(value) : undefined))
     @IsInt()
-    @ApiProperty({ description: 'Rol asignado', example: 2 })
+    @ApiProperty({ description: 'Rol asignado', example: 2, type: Number })
     idRol?: number;
   
     @IsOptional()
+    @Transform(({ value }) => (value ? parseInt(value) : undefined))
     @IsInt()
-    @ApiProperty({ description: 'Cliente asignado', example: 5 })
+    @ApiProperty({ description: 'Cliente asignado', example: 5, type: Number })
     idCliente?: number;
   
     @IsOptional()
     @IsArray()
+    @Transform(({ value }) => {
+      if (!value) return undefined;
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value).map(Number);
+        } catch {
+          return value.split(',').map(Number);
+        }
+      }
+      return Array.isArray(value) ? value.map(Number) : [Number(value)];
+    })
     @IsNumber({}, { each: true })
+    @ApiProperty({
+      description: 'Array de IDs de permisos asignados al usuario',
+      example: [1, 2, 3, 5],
+      type: [Number],
+      required: false
+    })
     permisosIds?: number[];
   }

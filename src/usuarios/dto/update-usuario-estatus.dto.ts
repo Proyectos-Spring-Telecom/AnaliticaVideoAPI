@@ -6,8 +6,10 @@ export class UpdateUsuarioEstatusDto {
   @IsInt({ message: 'estatus debe ser un número entero'})
   @IsIn([0, 1], { message: 'Solo puede ser 0 ó 1'})
   @ApiProperty({
-      description: 'Estatus de activacion del usuario',
-      example: '1',
+      description: 'Estatus de activación del usuario (0=Inactivo, 1=Activo)',
+      example: 1,
+      enum: [0, 1],
+      required: true
     })
   estatus: number = 1;
 }

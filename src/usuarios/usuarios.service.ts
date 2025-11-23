@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Usuarios } from 'src/entities/Usuarios';
 import { Repository } from 'typeorm';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
+import { S3Service } from 'src/s3/s3.service';
 import { ClientesService } from 'src/clientes/clientes.service';
 import { UsuariosPermisos } from 'src/entities/UsuariosPermisos';
 import { UpdateUsuarioEstatusDto } from './dto/update-usuario-estatus.dto';
@@ -20,6 +21,7 @@ export class UsuariosService {
         @InjectRepository(Usuarios)
         private readonly usuarioRepository: Repository<Usuarios>,
         private readonly bitacoraLogger: BitacoraService,
+        private readonly s3Service: S3Service,
         private readonly clientesService: ClientesService,
         @InjectRepository(UsuariosPermisos)
         private usuariosPermisosRepository: Repository<UsuariosPermisos>,
@@ -460,6 +462,7 @@ export class UsuariosService {
       async createUsuario(
         createUsuarioDto: CreateUsuarioDto,
         idUser: string,
+        fotoPerfilFile?: Express.Multer.File,
       ): Promise<ApiCrudResponse> {
         try {
           const existUsuario = await this.usuarioRepository.findOne({
@@ -468,6 +471,12 @@ export class UsuariosService {
           });
           if (existUsuario) {
             throw new BadRequestException('El usuario ya existe');
+          }
+    
+          // Subir foto de perfil a S3 si existe
+          if (fotoPerfilFile) {
+            const uploadResult = await this.s3Service.uploadFile(fotoPerfilFile, 'Usuarios', Number(idUser), 2);
+            createUsuarioDto.fotoPerfil = uploadResult.url;
           }
     
           const hashedPassword = await bcrypt.hash(
@@ -504,7 +513,13 @@ export class UsuariosService {
           await this.emailService.sendConfirmationEmail(userSave.userName, name,token);
     
           //-----Registro en la bitacora----- SUCCESS
-          const querylogger = { createUsuarioDto };  
+          // Excluir campos sensibles y de archivo para evitar exceder el límite del campo Query y por seguridad
+          const { passwordHash, fotoPerfil, ...usuarioDtoSinSensibles } = createUsuarioDto;
+          // Convertir a objeto plano para evitar problemas de serialización
+          const querylogger = JSON.parse(JSON.stringify({ 
+            createUsuarioDto: usuarioDtoSinSensibles,
+            fotoPerfilSubida: fotoPerfil ? 'Sí' : 'No',
+          }));  
           await this.bitacoraLogger.logToBitacora(
             'Usuarios',
             `Se creó un usuarios con nombre: ${createUsuarioDto.nombre}`,
@@ -530,11 +545,17 @@ export class UsuariosService {
           };
           return result;
         } catch (error) {
-          //-----Registro en la bitacora----- SUCCESS
-          const querylogger = { createUsuarioDto };
+          //-----Registro en la bitacora----- ERROR
+          // Excluir campos sensibles y de archivo para evitar exceder el límite del campo Query y por seguridad
+          const { passwordHash, fotoPerfil, ...usuarioDtoSinSensibles } = createUsuarioDto;
+          // Convertir a objeto plano para evitar problemas de serialización
+          const querylogger = JSON.parse(JSON.stringify({ 
+            createUsuarioDto: usuarioDtoSinSensibles,
+            fotoPerfilSubida: fotoPerfil ? 'Sí' : 'No',
+          }));
           await this.bitacoraLogger.logToBitacora(
             'Usuarios',
-            `Se creó un usuarios con nombre: ${createUsuarioDto.nombre}`,
+            `Error al crear usuario con nombre: ${createUsuarioDto.nombre}`,
             'CREATE',
             querylogger,
             Number(idUser),
@@ -651,6 +672,7 @@ export class UsuariosService {
         id: number,
         updateUsuarioDto: UpdateUsuarioDto,
         idUser: string,
+        fotoPerfilFile?: Express.Multer.File,
       ): Promise<ApiCrudResponse> {
         try {
           const usuario = await this.usuarioRepository.findOne({
@@ -658,6 +680,12 @@ export class UsuariosService {
           });
           if (!usuario) {
             throw new NotFoundException(`Usuario con ID:${id} no encontrado`);
+          }
+    
+          // Subir foto de perfil a S3 si existe (solo actualizar si se envía un nuevo archivo)
+          if (fotoPerfilFile) {
+            const uploadResult = await this.s3Service.uploadFile(fotoPerfilFile, 'Usuarios', Number(idUser), 2);
+            updateUsuarioDto.fotoPerfil = uploadResult.url;
           }
     
           if (updateUsuarioDto.idCliente) {
@@ -744,7 +772,13 @@ export class UsuariosService {
           }
     
           // ----- Registro en la bitácora ----- SUCCESS
-          const querylogger = { updateUsuarioDto };
+          // Excluir campos de archivo para evitar exceder el límite del campo Query
+          const { fotoPerfil, ...usuarioDtoSinArchivos } = updateUsuarioDto;
+          // Convertir a objeto plano para evitar problemas de serialización
+          const querylogger = JSON.parse(JSON.stringify({ 
+            updateUsuarioDto: usuarioDtoSinArchivos,
+            fotoPerfilSubida: fotoPerfilFile ? 'Sí' : 'No',
+          }));
           await this.bitacoraLogger.logToBitacora(
             'Usuarios',
             `Se actualizó el usuario: ${newUser.nombre} con ID: ${newUser.id}.`,
@@ -769,10 +803,16 @@ export class UsuariosService {
           return result;
         } catch (error) {
           // ----- Registro en la bitácora ----- ERROR
-          const querylogger = { updateUsuarioDto };
+          // Excluir campos de archivo para evitar exceder el límite del campo Query
+          const { fotoPerfil, ...usuarioDtoSinArchivos } = updateUsuarioDto;
+          // Convertir a objeto plano para evitar problemas de serialización
+          const querylogger = JSON.parse(JSON.stringify({ 
+            updateUsuarioDto: usuarioDtoSinArchivos,
+            fotoPerfilSubida: fotoPerfilFile ? 'Sí' : 'No',
+          }));
           await this.bitacoraLogger.logToBitacora(
             'Usuarios',
-            `Se actualizó el usuario con ID: ${id}.`,
+            `Error al actualizar usuario con ID: ${id}.`,
             'UPDATE',
             querylogger,
             Number(idUser),

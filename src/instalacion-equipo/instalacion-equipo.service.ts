@@ -60,7 +60,15 @@ export class InstalacionEquipoService {
   async findAll() {
     try {
        const data = await this.instalacionEquipo.find({relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo']})
-       return data;
+       // Agregar nombreInstalacionCentral a cada elemento
+       const mappedData = data.map((item) => ({
+         ...item,
+         instalacionCentral: item.instalacionCentral ? {
+           ...item.instalacionCentral,
+           nombreInstalacionCentral: item.instalacionCentral.nombre || null,
+         } : null,
+       }));
+       return mappedData;
     } catch (error) {
       
     }
@@ -68,9 +76,22 @@ export class InstalacionEquipoService {
 
   async findOne(id: number) {
     try {
-      const instalacion = await this.instalacionEquipo.findOne({where:{id:id}})
+      const instalacion = await this.instalacionEquipo.findOne({
+        where:{id:id},
+        relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo']
+      })
       if(!instalacion) throw new NotFoundException('No se ha encontrado la instalacion buscada')
-       return instalacion;
+      
+      // Agregar nombreInstalacionCentral a la respuesta
+      const response = {
+        ...instalacion,
+        instalacionCentral: instalacion.instalacionCentral ? {
+          ...instalacion.instalacionCentral,
+          nombreInstalacionCentral: instalacion.instalacionCentral.nombre || null,
+        } : null,
+      };
+      
+      return response;
     } catch (error) {
       throw new error;
     }

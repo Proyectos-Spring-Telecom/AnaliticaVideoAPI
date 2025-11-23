@@ -6,24 +6,26 @@ export class MailServiceService {
     private transporter: nodemailer.Transporter;
 
     constructor() {
+      const port = parseInt(process.env.SMTP || '465', 10);
       this.transporter = nodemailer.createTransport({
-        host: process.env.HOST, // o tu proveedor SMTP
-        port: process.env.SMTP,
-        secure: true,
+        host: process.env.HOST || 'localhost', // o tu proveedor SMTP
+        port: port,
+        secure: port === 465, // true para 465, false para otros puertos
         auth: {
           user: process.env.E_MAIL,
-          pass: 'p323+p2%16#^',
+          pass: process.env.E_MAIL_PASSWORD || 'p323+p2%16#^',
         },
       });
     }
   
     async sendConfirmationEmail(to: string, name: string, token: string) {
-      const url = `http://localhost:3000/login/verify?token=${token}`;
-      await this.transporter.sendMail({
-        from: `<${process.env.E_MAIL}>`,
-        to,
-        subject: '¡Bienvenido!',
-        html: `
+      try {
+        const url = `http://localhost:3000/login/verify?token=${token}`;
+        await this.transporter.sendMail({
+          from: `<${process.env.E_MAIL}>`,
+          to,
+          subject: '¡Bienvenido!',
+          html: `
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -88,14 +90,20 @@ export class MailServiceService {
   </body>
   </html>
         `,
-      });
+        });
+      } catch (error) {
+        console.error('Error al enviar correo de confirmación:', error.message);
+        // No lanzamos el error para que no falle la creación del usuario
+        // El correo puede fallar pero el usuario debe crearse igualmente
+      }
     }
   
     async sendResetPasswordEmail(to: string,name: string, token: string) {
-      const url = `http://localhost:3000/reset-password?token=${token}`;
-      // 👆 Este debe apuntar a tu frontend Angular (puedes ajustarlo a localhost:3000 si haces la prueba desde backend)
-  
-      await this.transporter.sendMail({
+      try {
+        const url = `http://localhost:3000/reset-password?token=${token}`;
+        // 👆 Este debe apuntar a tu frontend Angular (puedes ajustarlo a localhost:3000 si haces la prueba desde backend)
+    
+        await this.transporter.sendMail({
         from: ` <${process.env.E_MAIL}>`,
         to,
         subject: 'Restablecer Contraseña',
@@ -164,6 +172,11 @@ export class MailServiceService {
   </body>
   </html>
       `,
-      });
+        });
+      } catch (error) {
+        console.error('Error al enviar correo de restablecimiento de contraseña:', error.message);
+        // No lanzamos el error para que no falle el proceso
+        throw error; // En este caso sí lanzamos porque es crítico para reset password
+      }
     }
 }
