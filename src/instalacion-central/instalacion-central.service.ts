@@ -44,7 +44,19 @@ export class InstalacionCentralService {
 
   async findAll() {
     try {
-      const data = await this.instalacionCentralRepository.find({         relations: ['cliente', 'instalaciones','instalaciones.cliente','instalaciones.instalacionCentral','instalaciones.instalacionCentral.cliente'] });
+      const data = await this.instalacionCentralRepository.find({         
+        relations: [
+          'cliente', 
+          'instalaciones',
+          'instalaciones.cliente',
+          'instalaciones.instalacionCentral',
+          'instalaciones.instalacionCentral.cliente',
+          'instalaciones.equipo',
+          'instalaciones.equipo.modelo',
+          'instalaciones.equipo.estadoEquipo',
+          'instalaciones.equipo.cliente'
+        ] 
+      });
       const mappedData = data.map(({ cliente, ...rest }) => {
         const c = cliente;
 
@@ -63,6 +75,25 @@ export class InstalacionCentralService {
           .filter(Boolean)
           .join(", ");
 
+        // Mapear las instalaciones para asegurar que el equipo completo esté incluido
+        const instalacionesMapeadas = rest.instalaciones?.map((instalacion) => ({
+          ...instalacion,
+          equipo: instalacion.equipo ? {
+            id: instalacion.equipo.id,
+            numeroSerie: instalacion.equipo.numeroSerie,
+            ip: instalacion.equipo.ip,
+            estatus: instalacion.equipo.estatus,
+            idCliente: instalacion.equipo.idCliente,
+            idModelo: instalacion.equipo.idModelo,
+            idEstadoEquipo: instalacion.equipo.idEstadoEquipo,
+            fechaCreacion: instalacion.equipo.fechaCreacion,
+            fechaActualizacion: instalacion.equipo.fechaActualizacion,
+            modelo: instalacion.equipo.modelo || null,
+            estadoEquipo: instalacion.equipo.estadoEquipo || null,
+            cliente: instalacion.equipo.cliente || null,
+          } : null,
+        })) || [];
+
         return {
           ...rest,
           id: Number(rest.id),
@@ -71,6 +102,7 @@ export class InstalacionCentralService {
           nombreCliente,
           direccion,
           nombreEncargado: c?.nombreEncargado || null,
+          instalaciones: instalacionesMapeadas,
         };
       });
 
@@ -90,7 +122,17 @@ export class InstalacionCentralService {
 
       // Obtener datos y total
       const [data, total] = await this.instalacionCentralRepository.findAndCount({
-        relations: ['cliente', 'instalaciones','instalaciones.cliente','instalaciones.instalacionCentral','instalaciones.instalacionCentral.cliente'],
+        relations: [
+          'cliente', 
+          'instalaciones',
+          'instalaciones.cliente',
+          'instalaciones.instalacionCentral',
+          'instalaciones.instalacionCentral.cliente',
+          'instalaciones.equipo',
+          'instalaciones.equipo.modelo',
+          'instalaciones.equipo.estadoEquipo',
+          'instalaciones.equipo.cliente'
+        ],
         skip,
         take: limit,
         order: { id: 'ASC' }, // puedes cambiar el orden si quieres
@@ -116,6 +158,25 @@ export class InstalacionCentralService {
           .filter(Boolean)
           .join(', ');
 
+        // Mapear las instalaciones para asegurar que el equipo completo esté incluido
+        const instalacionesMapeadas = rest.instalaciones?.map((instalacion) => ({
+          ...instalacion,
+          equipo: instalacion.equipo ? {
+            id: instalacion.equipo.id,
+            numeroSerie: instalacion.equipo.numeroSerie,
+            ip: instalacion.equipo.ip,
+            estatus: instalacion.equipo.estatus,
+            idCliente: instalacion.equipo.idCliente,
+            idModelo: instalacion.equipo.idModelo,
+            idEstadoEquipo: instalacion.equipo.idEstadoEquipo,
+            fechaCreacion: instalacion.equipo.fechaCreacion,
+            fechaActualizacion: instalacion.equipo.fechaActualizacion,
+            modelo: instalacion.equipo.modelo || null,
+            estadoEquipo: instalacion.equipo.estadoEquipo || null,
+            cliente: instalacion.equipo.cliente || null,
+          } : null,
+        })) || [];
+
         return {
           ...rest,
           id: Number(rest.id),
@@ -124,6 +185,7 @@ export class InstalacionCentralService {
           nombreCliente,
           direccion,
           nombreEncargado: c?.nombreEncargado || null,
+          instalaciones: instalacionesMapeadas,
         };
       });
 
@@ -147,16 +209,49 @@ export class InstalacionCentralService {
 
   async findOne(id: number) {
     try {
-      const data = await this.instalacionCentralRepository.findOne({ where: { id: id }, relations: ['cliente', 'instalaciones'] });
+      const data = await this.instalacionCentralRepository.findOne({ 
+        where: { id: id }, 
+        relations: [
+          'cliente', 
+          'instalaciones',
+          'instalaciones.cliente',
+          'instalaciones.instalacionCentral',
+          'instalaciones.instalacionCentral.cliente',
+          'instalaciones.equipo',
+          'instalaciones.equipo.modelo',
+          'instalaciones.equipo.estadoEquipo',
+          'instalaciones.equipo.cliente'
+        ] 
+      });
 
       if (!data) {
         throw new ConflictException(`La instalacion con el id ${id} no existe`);
       }
       
-      // Agregar nombreInstalacionCentral a la respuesta
+      // Mapear las instalaciones para asegurar que el equipo completo esté incluido
+      const instalacionesMapeadas = data.instalaciones?.map((instalacion) => ({
+        ...instalacion,
+        equipo: instalacion.equipo ? {
+          id: instalacion.equipo.id,
+          numeroSerie: instalacion.equipo.numeroSerie,
+          ip: instalacion.equipo.ip,
+          estatus: instalacion.equipo.estatus,
+          idCliente: instalacion.equipo.idCliente,
+          idModelo: instalacion.equipo.idModelo,
+          idEstadoEquipo: instalacion.equipo.idEstadoEquipo,
+          fechaCreacion: instalacion.equipo.fechaCreacion,
+          fechaActualizacion: instalacion.equipo.fechaActualizacion,
+          modelo: instalacion.equipo.modelo || null,
+          estadoEquipo: instalacion.equipo.estadoEquipo || null,
+          cliente: instalacion.equipo.cliente || null,
+        } : null,
+      })) || [];
+      
+      // Agregar nombreInstalacionCentral y las instalaciones mapeadas a la respuesta
       const response = {
         ...data,
         nombreInstalacionCentral: data.nombre || null,
+        instalaciones: instalacionesMapeadas,
       };
       
       return response;

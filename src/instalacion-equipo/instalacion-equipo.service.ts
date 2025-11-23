@@ -17,7 +17,10 @@ export class InstalacionEquipoService {
 
   async create(createInstalacionEquipoDto: CreateInstalacionEquipoDto, req:any) {
      try {
-      var isAvailable = await this.equiposRepository.findOne({where:{id:createInstalacionEquipoDto.idEquipo}})
+      var isAvailable = await this.equiposRepository.findOne({
+        where:{id:createInstalacionEquipoDto.idEquipo},
+        relations:['modelo','estadoEquipo','cliente']
+      })
       if(!isAvailable) throw new NotFoundException('Equipo no encontrado.')
       if(isAvailable?.idEstadoEquipo !== EstadoEquipoEnum.DISPONIBLE){
         throw new ConflictException('El equipo no esta disponible para ser instalado.')
@@ -28,6 +31,13 @@ export class InstalacionEquipoService {
            isAvailable.idEstadoEquipo = EstadoEquipoEnum.INSTALADO;
            await this.equiposRepository.update(isAvailable.id,isAvailable);
         }
+        
+        // Obtener la instalación completa con relaciones
+        const instalacionCompleta = await this.instalacionEquipo.findOne({
+          where: { id: saved.id },
+          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+        });
+        
         const querylogger = { createInstalacionEquipoDto };
         const idUser = req.user.userId;
         await this.bitacoraService.logToBitacora(
@@ -39,13 +49,14 @@ export class InstalacionEquipoService {
           1,
           EstatusEnumBitcora.SUCCESS,
         );
-        const result: ApiCrudResponse = {
+        const result = {
           status: 'success',
           message: 'El equipo ha sido instalado correctamente.',
           data: {
             id: saved.id,
-            nombre:
-              `${isAvailable.numeroSerie}` || '',
+            nombre: `${isAvailable.numeroSerie}` || '',
+            equipo: instalacionCompleta?.equipo || null,
+            instalacionCentral: instalacionCompleta?.instalacionCentral || null,
           },
         };
         return result;
@@ -59,18 +70,66 @@ export class InstalacionEquipoService {
 
   async findAll() {
     try {
-       const data = await this.instalacionEquipo.find({relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo']})
-       // Agregar nombreInstalacionCentral a cada elemento
-       const mappedData = data.map((item) => ({
-         ...item,
-         instalacionCentral: item.instalacionCentral ? {
-           ...item.instalacionCentral,
-           nombreInstalacionCentral: item.instalacionCentral.nombre || null,
-         } : null,
-       }));
+       const data = await this.instalacionEquipo.find({
+         relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+       })
+       
+       // Mapear los datos asegurando que el equipo completo esté incluido
+       const mappedData = data.map((item) => {
+         const result: any = {
+           id: item.id,
+           idEquipo: item.idEquipo,
+           lat: item.lat,
+           lng: item.lng,
+           estatus: item.estatus,
+           fhRegistro: item.fhRegistro,
+           fechaActualizacion: item.fechaActualizacion,
+           idCliente: item.idCliente,
+           idSedeCentral: item.idSedeCentral,
+         };
+         
+         // Incluir equipo completo con todas sus propiedades
+         if (item.equipo) {
+           result.equipo = {
+             id: item.equipo.id,
+             numeroSerie: item.equipo.numeroSerie,
+             ip: item.equipo.ip,
+             estatus: item.equipo.estatus,
+             idCliente: item.equipo.idCliente,
+             idModelo: item.equipo.idModelo,
+             idEstadoEquipo: item.equipo.idEstadoEquipo,
+             fechaCreacion: item.equipo.fechaCreacion,
+             fechaActualizacion: item.equipo.fechaActualizacion,
+             modelo: item.equipo.modelo || null,
+             estadoEquipo: item.equipo.estadoEquipo || null,
+             cliente: item.equipo.cliente || null,
+           };
+         } else {
+           result.equipo = null;
+         }
+         
+         // Incluir instalacionCentral
+         if (item.instalacionCentral) {
+           result.instalacionCentral = {
+             ...item.instalacionCentral,
+             nombreInstalacionCentral: item.instalacionCentral.nombre || null,
+           };
+         } else {
+           result.instalacionCentral = null;
+         }
+         
+         // Incluir cliente si existe
+         if (item.cliente) {
+           result.cliente = item.cliente;
+         }
+         
+         return result;
+       });
+       
        return mappedData;
     } catch (error) {
-      
+      console.error('Error en findAll:', error);
+      throw error;
     }
   }
 
@@ -78,13 +137,16 @@ export class InstalacionEquipoService {
     try {
       const instalacion = await this.instalacionEquipo.findOne({
         where:{id:id},
-        relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo']
+        relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
       })
       if(!instalacion) throw new NotFoundException('No se ha encontrado la instalacion buscada')
       
-      // Agregar nombreInstalacionCentral a la respuesta
+      // Agregar nombreInstalacionCentral y asegurar que el equipo completo esté incluido
       const response = {
         ...instalacion,
+        equipo: instalacion.equipo ? {
+          ...instalacion.equipo,
+        } : null,
         instalacionCentral: instalacion.instalacionCentral ? {
           ...instalacion.instalacionCentral,
           nombreInstalacionCentral: instalacion.instalacionCentral.nombre || null,
@@ -99,18 +161,29 @@ export class InstalacionEquipoService {
 
   async update(id: number, updateInstalacionEquipoDto: UpdateInstalacionEquipoDto) {
     try {
-      const instalacion = await this.instalacionEquipo.findOne({ where: { id: id } });
+      const instalacion = await this.instalacionEquipo.findOne({ 
+        where: { id: id },
+        relations:['equipo','instalacionCentral','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+      });
       if (!instalacion) {
         throw new ConflictException(`La instalacion con el id ${id} no existe`);
       }
       await this.instalacionEquipo.update(id, updateInstalacionEquipoDto);
-      const result: ApiCrudResponse = {
+      
+      // Obtener la instalación actualizada con todas las relaciones
+      const instalacionActualizada = await this.instalacionEquipo.findOne({
+        where: { id: id },
+        relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+      });
+      
+      const result = {
         status: 'success',
         message: 'La instalación del equipo ha sido actualizada correctamente.',
         data: {
           id: id,
           nombre: `${updateInstalacionEquipoDto.lat} ${updateInstalacionEquipoDto.lng}` || '',
-
+          equipo: instalacionActualizada?.equipo || null,
+          instalacionCentral: instalacionActualizada?.instalacionCentral || null,
         },
       };
       return result
