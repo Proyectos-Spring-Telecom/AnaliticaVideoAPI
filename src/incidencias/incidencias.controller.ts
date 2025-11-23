@@ -2,12 +2,17 @@ import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { IncidenciasService } from './incidencias.service';
 import { ApiCrudResponse } from 'src/common/ApiResponse';
 import { CreateIncidenciaDto } from './dto/create-incidencia.dto';
+import { ApiOperation, ApiSecurity } from '@nestjs/swagger';
 
 @Controller('incidencias')
 export class IncidenciasController {
   constructor(private readonly incidenciasService: IncidenciasService) { }
 
   @Post()
+  @ApiOperation({ 
+    summary: 'Crear nueva incidencia',
+    security: []
+  })
   async create(
     @Body() createIncidenciaDto: CreateIncidenciaDto,
   ) {
