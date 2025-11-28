@@ -21,8 +21,10 @@ export class InstalacionEquipoController {
   @ApiOperation({
     summary:'Obtener instalaciónes equipos'
   })
-  findAll() {
-    return this.instalacionEquipoService.findAll();
+  findAll(@Req() req) {
+    const cliente = req.user?.cliente;
+    const rol = req.user?.rol;
+    return this.instalacionEquipoService.findAll(+cliente, +rol);
   }
 
   @Get(':id')

@@ -3,14 +3,20 @@ import { CreateEquipoDto } from './dto/create-equipo.dto';
 import { UpdateEquipoDto } from './dto/update-equipo.dto';
 import { Equipos } from 'src/entities/Equipos';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Raw, Repository } from 'typeorm';
+import { In, Not, Raw, Repository } from 'typeorm';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
 import { ApiCrudResponse, ApiResponseCommon, EstatusEnumBitcora } from 'src/common/ApiResponse';
 import { EstadoEquipoEnum } from 'src/utils/enums/EstatusEquiposEnum.enum';
+import { getClienteHijos, getClienteHijosPag } from 'src/utils/cliente-utils';
+import { Clientes } from 'src/entities/Clientes';
 
 @Injectable()
 export class EquiposService {
-  constructor(@InjectRepository(Equipos) private readonly equiposRepository:Repository<Equipos>,    private readonly bitacoraLogger: BitacoraService){}
+  constructor(
+    @InjectRepository(Equipos) private readonly equiposRepository:Repository<Equipos>,
+    @InjectRepository(Clientes) private readonly clienteRepository:Repository<Clientes>,
+    private readonly bitacoraLogger: BitacoraService
+  ){}
 
   async create(createEquipoDto: CreateEquipoDto,idUser:number) {
     try {
@@ -52,17 +58,72 @@ export class EquiposService {
     }
   }
 
-  async findAllPaginated(page: number, limit: number) {
+  async findAllPaginated(page: number, limit: number, cliente?: number, rol?: number) {
     try {
       const skip = (page - 1) * limit;
-        const [data, total] = await this.equiposRepository.findAndCount({
-        skip,
-        take: limit,
-                        relations:['estadoEquipo','modelo','cliente'],
+      let data, total;
 
-        order: { id: 'DESC' }, 
-      });
-        const result: ApiResponseCommon = {
+      if (rol === 1) {
+        // SuperAdministrador - obtiene todos los equipos
+        [data, total] = await this.equiposRepository.findAndCount({
+          skip,
+          take: limit,
+          relations:['estadoEquipo','modelo','cliente'],
+          order: { id: 'DESC' }, 
+        });
+      } else if (cliente) {
+        // Usuarios normales - solo equipos del cliente actual y sus hijos (sin el padre)
+        const { ids, placeholders } = await getClienteHijosPag(this.clienteRepository, cliente);
+        
+        if (ids.length === 0 || !placeholders) {
+          data = [];
+          total = 0;
+        } else {
+          const equipos = await this.equiposRepository.query(
+            `
+SELECT e.*
+FROM Equipos e
+WHERE e.IdCliente IN (${placeholders})
+ORDER BY e.Id DESC
+LIMIT ? OFFSET ?;
+            `,
+            [...ids, limit, skip],
+          );
+
+          const totalResult = await this.equiposRepository.query(
+            `
+SELECT COUNT(*) AS total
+FROM Equipos e
+WHERE e.IdCliente IN (${placeholders});
+            `,
+            [...ids],
+          );
+
+          total = Number(totalResult[0]?.total || 0);
+          
+          // Obtener equipos completos con relaciones
+          const equiposIds = equipos.map((e: any) => e.Id);
+          if (equiposIds.length > 0) {
+            data = await this.equiposRepository.find({
+              where: { id: In(equiposIds) },
+              relations:['estadoEquipo','modelo','cliente'],
+              order: { id: 'DESC' },
+            });
+          } else {
+            data = [];
+          }
+        }
+      } else {
+        // Sin cliente - obtener todos
+        [data, total] = await this.equiposRepository.findAndCount({
+          skip,
+          take: limit,
+          relations:['estadoEquipo','modelo','cliente'],
+          order: { id: 'DESC' }, 
+        });
+      }
+
+      const result: ApiResponseCommon = {
         data,
         paginated: {
           total: total,
@@ -76,9 +137,44 @@ export class EquiposService {
     }
   }
 
-  async findAll() {
+  async findAll(cliente?: number, rol?: number) {
     try {
-      const data = await this.equiposRepository.find({relations:['cliente','modelo',]});
+      let data;
+
+      if (rol === 1) {
+        // SuperAdministrador - obtiene todos los equipos
+        data = await this.equiposRepository.find({relations:['cliente','modelo']});
+      } else if (cliente) {
+        // Usuarios normales - solo equipos del cliente actual y sus hijos (sin el padre)
+        const { ids, placeholders } = await getClienteHijos(this.clienteRepository, cliente);
+        
+        if (ids.length === 0 || !placeholders) {
+          data = [];
+        } else {
+          const equipos = await this.equiposRepository.query(
+            `
+SELECT e.Id
+FROM Equipos e
+WHERE e.IdCliente IN (${placeholders});
+            `,
+            [...ids],
+          );
+
+          const equiposIds = equipos.map((e: any) => e.Id);
+          if (equiposIds.length > 0) {
+            data = await this.equiposRepository.find({
+              where: { id: In(equiposIds) },
+              relations:['cliente','modelo'],
+            });
+          } else {
+            data = [];
+          }
+        }
+      } else {
+        // Sin cliente - obtener todos
+        data = await this.equiposRepository.find({relations:['cliente','modelo']});
+      }
+
       const result: ApiResponseCommon = {
         data: data,
       };

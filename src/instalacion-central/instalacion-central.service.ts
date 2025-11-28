@@ -3,14 +3,20 @@ import { CreateInstalacionCentralDto } from './dto/create-instalacion-central.dt
 import { UpdateInstalacionCentralDto } from './dto/update-instalacion-central.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InstalacionCentral } from 'src/entities/InstalacionCentral';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
 import { ApiCrudResponse, ApiResponseCommon, EstatusEnumBitcora } from 'src/common/ApiResponse';
 import { log } from 'console';
+import { getClienteHijos, getClienteHijosPag } from 'src/utils/cliente-utils';
+import { Clientes } from 'src/entities/Clientes';
 
 @Injectable()
 export class InstalacionCentralService {
-  constructor(@InjectRepository(InstalacionCentral) private instalacionCentralRepository: Repository<InstalacionCentral>, private readonly bitacoraService: BitacoraService) { }
+  constructor(
+    @InjectRepository(InstalacionCentral) private instalacionCentralRepository: Repository<InstalacionCentral>,
+    @InjectRepository(Clientes) private clienteRepository: Repository<Clientes>,
+    private readonly bitacoraService: BitacoraService
+  ) { }
 
   async create(createInstalacionCentralDto: CreateInstalacionCentralDto, req) {
     try {
@@ -42,21 +48,63 @@ export class InstalacionCentralService {
     }
   }
 
-  async findAll() {
+  async findAll(cliente?: number, rol?: number) {
     try {
-      const data = await this.instalacionCentralRepository.find({         
-        relations: [
-          'cliente', 
-          'instalaciones',
-          'instalaciones.cliente',
-          'instalaciones.instalacionCentral',
-          'instalaciones.instalacionCentral.cliente',
-          'instalaciones.equipo',
-          'instalaciones.equipo.modelo',
-          'instalaciones.equipo.estadoEquipo',
-          'instalaciones.equipo.cliente'
-        ] 
-      });
+      let data;
+
+      if (rol === 1) {
+        // SuperAdministrador - obtiene todas las instalaciones
+        data = await this.instalacionCentralRepository.find({         
+          relations: [
+            'cliente', 
+            'instalaciones',
+            'instalaciones.cliente',
+            'instalaciones.instalacionCentral',
+            'instalaciones.instalacionCentral.cliente',
+            'instalaciones.equipo',
+            'instalaciones.equipo.modelo',
+            'instalaciones.equipo.estadoEquipo',
+            'instalaciones.equipo.cliente'
+          ] 
+        });
+      } else if (cliente) {
+        // Usuarios normales - solo instalaciones del cliente actual y sus hijos (sin el padre)
+        const { ids, placeholders } = await getClienteHijos(this.clienteRepository, cliente);
+        
+        if (ids.length === 0 || !placeholders) {
+          data = [];
+        } else {
+          data = await this.instalacionCentralRepository.find({
+            where: { idCliente: In(ids) },
+            relations: [
+              'cliente', 
+              'instalaciones',
+              'instalaciones.cliente',
+              'instalaciones.instalacionCentral',
+              'instalaciones.instalacionCentral.cliente',
+              'instalaciones.equipo',
+              'instalaciones.equipo.modelo',
+              'instalaciones.equipo.estadoEquipo',
+              'instalaciones.equipo.cliente'
+            ] 
+          });
+        }
+      } else {
+        // Sin cliente - obtener todas
+        data = await this.instalacionCentralRepository.find({         
+          relations: [
+            'cliente', 
+            'instalaciones',
+            'instalaciones.cliente',
+            'instalaciones.instalacionCentral',
+            'instalaciones.instalacionCentral.cliente',
+            'instalaciones.equipo',
+            'instalaciones.equipo.modelo',
+            'instalaciones.equipo.estadoEquipo',
+            'instalaciones.equipo.cliente'
+          ] 
+        });
+      }
       const mappedData = data.map(({ cliente, ...rest }) => {
         const c = cliente;
 
@@ -115,28 +163,76 @@ export class InstalacionCentralService {
     }
   }
 
-  async findAllPaginated(page:number, limit:number): Promise<ApiResponseCommon> {
+  async findAllPaginated(page:number, limit:number, cliente?: number, rol?: number): Promise<ApiResponseCommon> {
     try {
       // Calcular desplazamiento
       const skip = (page - 1) * limit;
 
-      // Obtener datos y total
-      const [data, total] = await this.instalacionCentralRepository.findAndCount({
-        relations: [
-          'cliente', 
-          'instalaciones',
-          'instalaciones.cliente',
-          'instalaciones.instalacionCentral',
-          'instalaciones.instalacionCentral.cliente',
-          'instalaciones.equipo',
-          'instalaciones.equipo.modelo',
-          'instalaciones.equipo.estadoEquipo',
-          'instalaciones.equipo.cliente'
-        ],
-        skip,
-        take: limit,
-        order: { id: 'ASC' }, // puedes cambiar el orden si quieres
-      });
+      let data, total;
+
+      if (rol === 1) {
+        // SuperAdministrador - obtiene todas las instalaciones
+        [data, total] = await this.instalacionCentralRepository.findAndCount({
+          relations: [
+            'cliente', 
+            'instalaciones',
+            'instalaciones.cliente',
+            'instalaciones.instalacionCentral',
+            'instalaciones.instalacionCentral.cliente',
+            'instalaciones.equipo',
+            'instalaciones.equipo.modelo',
+            'instalaciones.equipo.estadoEquipo',
+            'instalaciones.equipo.cliente'
+          ],
+          skip,
+          take: limit,
+          order: { id: 'ASC' },
+        });
+      } else if (cliente) {
+        // Usuarios normales - solo instalaciones del cliente actual y sus hijos (sin el padre)
+        const { ids, placeholders } = await getClienteHijosPag(this.clienteRepository, cliente);
+        
+        if (ids.length === 0 || !placeholders) {
+          data = [];
+          total = 0;
+        } else {
+          [data, total] = await this.instalacionCentralRepository.findAndCount({
+            where: { idCliente: In(ids) },
+            relations: [
+              'cliente', 
+              'instalaciones',
+              'instalaciones.cliente',
+              'instalaciones.instalacionCentral',
+              'instalaciones.instalacionCentral.cliente',
+              'instalaciones.equipo',
+              'instalaciones.equipo.modelo',
+              'instalaciones.equipo.estadoEquipo',
+              'instalaciones.equipo.cliente'
+            ],
+            skip,
+            take: limit,
+            order: { id: 'ASC' },
+          });
+        }
+      } else {
+        // Sin cliente - obtener todas
+        [data, total] = await this.instalacionCentralRepository.findAndCount({
+          relations: [
+            'cliente', 
+            'instalaciones',
+            'instalaciones.cliente',
+            'instalaciones.instalacionCentral',
+            'instalaciones.instalacionCentral.cliente',
+            'instalaciones.equipo',
+            'instalaciones.equipo.modelo',
+            'instalaciones.equipo.estadoEquipo',
+            'instalaciones.equipo.cliente'
+          ],
+          skip,
+          take: limit,
+          order: { id: 'ASC' },
+        });
+      }
 
       // Mapear resultados
       const mappedData = data.map(({ cliente, ...rest }) => {

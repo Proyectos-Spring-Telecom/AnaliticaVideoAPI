@@ -24,16 +24,20 @@ export class InstalacionCentralController {
     description:
       'Obtiene un listado completo de todas las instalaciones centrales registradas en el sistema, incluyendo la información del cliente asociado y sus instalaciones vinculadas.',
   })
-  findAll() {
-    return this.instalacionCentralService.findAll();
+  findAll(@Req() req) {
+    const cliente = req.user?.cliente;
+    const rol = req.user?.rol;
+    return this.instalacionCentralService.findAll(+cliente, +rol);
   }
 
   @Get('paginated')
   @ApiOperation({
     summary:'Lista de instalaciones centrales (cliente ubicación para grid'
   })
-  findAllPaginated(@Query('page') page: number, @Query('limit') limit: number) {
-    return this.instalacionCentralService.findAllPaginated(page, limit);
+  findAllPaginated(@Query('page') page: number, @Query('limit') limit: number, @Req() req) {
+    const cliente = req.user?.cliente;
+    const rol = req.user?.rol;
+    return this.instalacionCentralService.findAllPaginated(page, limit, +cliente, +rol);
   }
 
   @Get(':id')
