@@ -184,6 +184,60 @@ WHERE e.IdCliente IN (${placeholders});
     }
   }
 
+  async findAllDisponibles(cliente?: number, rol?: number) {
+    try {
+      let data;
+
+      if (rol === 1) {
+        // SuperAdministrador - obtiene todos los equipos disponibles
+        data = await this.equiposRepository.find({
+          where: { idEstadoEquipo: EstadoEquipoEnum.DISPONIBLE },
+          relations:['cliente','modelo','estadoEquipo']
+        });
+      } else if (cliente) {
+        // Usuarios normales - solo equipos disponibles del cliente actual y sus hijos (sin el padre)
+        const { ids, placeholders } = await getClienteHijos(this.clienteRepository, cliente);
+        
+        if (ids.length === 0 || !placeholders) {
+          data = [];
+        } else {
+          const equipos = await this.equiposRepository.query(
+            `
+SELECT e.Id
+FROM Equipos e
+WHERE e.IdCliente IN (${placeholders})
+  AND e.IdEstadoEquipo = ?;
+            `,
+            [...ids, EstadoEquipoEnum.DISPONIBLE],
+          );
+
+          const equiposIds = equipos.map((e: any) => e.Id);
+          if (equiposIds.length > 0) {
+            data = await this.equiposRepository.find({
+              where: { id: In(equiposIds) },
+              relations:['cliente','modelo','estadoEquipo'],
+            });
+          } else {
+            data = [];
+          }
+        }
+      } else {
+        // Sin cliente - obtener todos los disponibles
+        data = await this.equiposRepository.find({
+          where: { idEstadoEquipo: EstadoEquipoEnum.DISPONIBLE },
+          relations:['cliente','modelo','estadoEquipo']
+        });
+      }
+
+      const result: ApiResponseCommon = {
+        data: data,
+      };
+      return result;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
   async findOne(id: number) {
     try {
       const data = await this.equiposRepository.findOne({ where: { id: id } });

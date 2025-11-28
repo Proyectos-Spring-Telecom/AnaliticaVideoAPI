@@ -3,9 +3,10 @@ import { EquiposService } from './equipos.service';
 import { CreateEquipoDto } from './dto/create-equipo.dto';
 import { UpdateEquipoDto } from './dto/update-equipo.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
+@ApiTags('Equipos')
 @Controller('equipos')
 export class EquiposController {
   constructor(private readonly equiposService: EquiposService) {}
@@ -21,6 +22,22 @@ export class EquiposController {
     const rol = req.user?.rol;
     return this.equiposService.findAll(+cliente, +rol);
   }
+
+  @Get('disponibles')
+  @ApiOperation({
+    summary: 'Obtener equipos disponibles',
+    description: 'Obtiene una lista de equipos con estatus DISPONIBLE filtrados por cliente. Los SuperAdministradores ven todos los equipos disponibles, otros roles solo ven equipos disponibles de su cliente y sus hijos.'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de equipos disponibles',
+  })
+  findAllDisponibles(@Req() req) {
+    const cliente = req.user?.cliente;
+    const rol = req.user?.rol;
+    return this.equiposService.findAllDisponibles(+cliente, +rol);
+  }
+
   @Get(':page/:limit')
   findAllPaginated(@Param('page', ParseIntPipe) page: number,
   @Param('limit', ParseIntPipe) limit: number, @Req() req) {
