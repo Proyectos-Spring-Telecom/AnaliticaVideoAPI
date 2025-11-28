@@ -16,13 +16,17 @@ export class EquiposController {
   }
 
   @Get()
-  findAll() {
-    return this.equiposService.findAll();
+  findAll(@Req() req) {
+    const cliente = req.user?.cliente;
+    const rol = req.user?.rol;
+    return this.equiposService.findAll(+cliente, +rol);
   }
   @Get(':page/:limit')
   findAllPaginated(@Param('page', ParseIntPipe) page: number,
-  @Param('limit', ParseIntPipe) limit: number) {
-    return this.equiposService.findAllPaginated(page,limit);
+  @Param('limit', ParseIntPipe) limit: number, @Req() req) {
+    const cliente = req.user?.cliente;
+    const rol = req.user?.rol;
+    return this.equiposService.findAllPaginated(page, limit, +cliente, +rol);
   }
 
   @Get(':id')

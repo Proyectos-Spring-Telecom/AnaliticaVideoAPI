@@ -3,17 +3,24 @@ import { CreateInstalacionEquipoDto } from './dto/create-instalacion-equipo.dto'
 import { UpdateInstalacionEquipoDto } from './dto/update-instalacion-equipo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equipos } from 'src/entities/Equipos';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InstalacionEquipo } from 'src/entities/InstalacionEquipo';
 import { EstadoEquipoEnum } from 'src/utils/enums/EstatusEquiposEnum.enum';
 import { ApiCrudResponse, EstatusEnumBitcora } from 'src/common/ApiResponse';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
 import { InstalacionCentral } from 'src/entities/InstalacionCentral';
+import { getClienteHijos } from 'src/utils/cliente-utils';
+import { Clientes } from 'src/entities/Clientes';
 
 @Injectable()
 export class InstalacionEquipoService {
-  constructor(@InjectRepository(InstalacionCentral) private readonly instalacionCentral:Repository<InstalacionCentral>, @InjectRepository(Equipos) private readonly equiposRepository:Repository<Equipos>,
-  @InjectRepository(InstalacionEquipo) private readonly instalacionEquipo:Repository<InstalacionEquipo>, private readonly bitacoraService: BitacoraService){}
+  constructor(
+    @InjectRepository(InstalacionCentral) private readonly instalacionCentral:Repository<InstalacionCentral>,
+    @InjectRepository(Equipos) private readonly equiposRepository:Repository<Equipos>,
+    @InjectRepository(InstalacionEquipo) private readonly instalacionEquipo:Repository<InstalacionEquipo>,
+    @InjectRepository(Clientes) private readonly clienteRepository:Repository<Clientes>,
+    private readonly bitacoraService: BitacoraService
+  ){}
 
   async create(createInstalacionEquipoDto: CreateInstalacionEquipoDto, req:any) {
      try {
@@ -68,11 +75,33 @@ export class InstalacionEquipoService {
      }
   }
 
-  async findAll() {
+  async findAll(cliente?: number, rol?: number) {
     try {
-       const data = await this.instalacionEquipo.find({
-         relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
-       })
+      let data;
+
+      if (rol === 1) {
+        // SuperAdministrador - obtiene todas las instalaciones
+        data = await this.instalacionEquipo.find({
+          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+        });
+      } else if (cliente) {
+        // Usuarios normales - solo instalaciones del cliente actual y sus hijos (sin el padre)
+        const { ids, placeholders } = await getClienteHijos(this.clienteRepository, cliente);
+        
+        if (ids.length === 0 || !placeholders) {
+          data = [];
+        } else {
+          data = await this.instalacionEquipo.find({
+            where: { idCliente: In(ids) },
+            relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+          });
+        }
+      } else {
+        // Sin cliente - obtener todas
+        data = await this.instalacionEquipo.find({
+          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+        });
+      }
        
        // Mapear los datos asegurando que el equipo completo esté incluido
        const mappedData = data.map((item) => {

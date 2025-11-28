@@ -14,6 +14,8 @@ import { UsuariosPermisos } from 'src/entities/UsuariosPermisos';
 import { UpdateUsuarioEstatusDto } from './dto/update-usuario-estatus.dto';
 import { MailServiceService } from 'src/mail-service/mail-service.service';
 import { JwtService } from '@nestjs/jwt';
+import { getClienteHijos, getClienteHijosPag } from 'src/utils/cliente-utils';
+import { Clientes } from 'src/entities/Clientes';
 
 @Injectable()
 export class UsuariosService {
@@ -25,6 +27,8 @@ export class UsuariosService {
         private readonly clientesService: ClientesService,
         @InjectRepository(UsuariosPermisos)
         private usuariosPermisosRepository: Repository<UsuariosPermisos>,
+        @InjectRepository(Clientes)
+        private readonly clienteRepository: Repository<Clientes>,
         private readonly emailService: MailServiceService,
         private readonly jwtService: JwtService,
       ) {}
@@ -93,8 +97,15 @@ export class UsuariosService {
     
             default:
               // Consulta de datos paginados resto Usuario
-              usuarios = await this.usuarioRepository.query(
-                `
+              const { ids, placeholders } = await getClienteHijosPag(this.clienteRepository, cliente);
+              
+              // Si no hay IDs, retornar resultados vacíos
+              if (ids.length === 0 || !placeholders) {
+                usuarios = [];
+                totalResult = [{ total: 0 }];
+              } else {
+                usuarios = await this.usuarioRepository.query(
+                  `
     SELECT
       -- Datos del Usuario
       u.Id AS Id,
@@ -122,23 +133,24 @@ export class UsuariosService {
     FROM Usuarios u
     INNER JOIN Roles r ON u.IdRol = r.Id
     LEFT JOIN Clientes c ON u.IdCliente = c.Id
-    WHERE c.Id = ?
+    WHERE c.Id IN (${placeholders})
     ORDER BY u.Id DESC
     LIMIT ? OFFSET ?;
             `,
-                [cliente, limit, offset],
-              );
+                  [...ids, limit, offset],
+                );
     
-              // Query para total (sin paginación)
-              totalResult = await this.usuarioRepository.query(
-                `
+                // Query para total (sin paginación)
+                totalResult = await this.usuarioRepository.query(
+                  `
       SELECT COUNT(*) AS total
       FROM Usuarios u
       INNER JOIN Clientes c ON u.IdCliente = c.Id
-        WHERE c.Id = ?
+        WHERE c.Id IN (${placeholders})
       `,
-                [cliente],
-              );
+                  [...ids],
+                );
+              }
               break;
           }
     
@@ -220,8 +232,14 @@ export class UsuariosService {
     
             default:
               // Consulta de datos listado resto Usuario
-              usuarios = await this.usuarioRepository.query(
-                `
+              const { ids: idsList, placeholders: placeholdersList } = await getClienteHijos(this.clienteRepository, cliente);
+              
+              // Si no hay IDs, retornar resultados vacíos
+              if (idsList.length === 0 || !placeholdersList) {
+                usuarios = [];
+              } else {
+                usuarios = await this.usuarioRepository.query(
+                  `
     SELECT
       -- Datos del Usuario
       u.Id AS Id,
@@ -249,12 +267,13 @@ export class UsuariosService {
     FROM Usuarios u
     INNER JOIN Roles r ON u.IdRol = r.Id
     LEFT JOIN Clientes c ON u.IdCliente = c.Id
-    WHERE c.Id = ?
+    WHERE c.Id IN (${placeholdersList})
     AND u.Estatus = 1
     ORDER BY u.Id DESC;
             `,
-                [cliente],
-              );
+                  [...idsList],
+                );
+              }
     
               break;
           }

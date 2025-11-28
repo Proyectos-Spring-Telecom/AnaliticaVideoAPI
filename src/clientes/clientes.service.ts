@@ -8,6 +8,7 @@ import { CreateClienteDto } from './dto/create-cliente.dto';
 import { ApiCrudResponse, ApiResponseCommon, EstatusEnumBitcora } from 'src/common/ApiResponse';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { UpdateClienteEstatusDto } from './dto/update-cliente-estatus.dto';
+import { getClienteHijos, getClienteHijosPag } from 'src/utils/cliente-utils';
 
 @Injectable()
 export class ClientesService {
@@ -140,7 +141,11 @@ export class ClientesService {
       });
     }
   }
-  //Obtener todos los clientes
+
+
+  // ========================================
+  // 🔹 OBTENER PAGINADO DE CLIENTES
+  // ========================================
   async getAllClientes(
     idUser: number,
     cliente: number,
@@ -181,13 +186,13 @@ SELECT
   ComprobanteDomicilio AS comprobanteDomicilio,
   ActaConstitutiva AS actaConstitutiva,
   Logotipo AS logotipo,
-  Estatus AS estatusCliente
+  Estatus AS estatus
   
 FROM Clientes
-ORDER BY Id DESC
+ORDER BY Id ASC
   LIMIT ? OFFSET ?;
             `,
-            [limit, offset]
+            [ limit, offset],
           );
 
           // Query para total (sin paginación)
@@ -196,15 +201,20 @@ ORDER BY Id DESC
   SELECT COUNT(*) AS total
 FROM Clientes
 
-
-  `,
+  `, 
           );
           break;
 
         default:
-           // Usuario Administrador - obtiene todas las regiones
-          clientes = await this.clienteRepository.query(
-            `
+           const { ids, placeholders } = await getClienteHijosPag(this.clienteRepository, cliente);
+          
+          // Si no hay IDs, retornar resultados vacíos
+          if (ids.length === 0 || !placeholders) {
+            clientes = [];
+            totalResult = [{ total: 0 }];
+          } else {
+            clientes = await this.clienteRepository.query(
+              `
 SELECT
   Id AS id,
   RFC AS rfc,
@@ -229,27 +239,28 @@ SELECT
   ComprobanteDomicilio AS comprobanteDomicilio,
   ActaConstitutiva AS actaConstitutiva,
   Logotipo AS logotipo,
-  Estatus AS estatusCliente
+  Estatus AS estatus
   
 FROM Clientes
-WHERE Id = ?   -- 🔹 aquí colocas el ID del cliente que quieres consultar
-ORDER BY Id DESC
+WHERE Id IN (${placeholders})   -- 🔹 aquí colocas el ID del cliente que quieres consultar
+ORDER BY Id ASC
   LIMIT ? OFFSET ?;
-            `,
-            [cliente, limit, offset]
-          );
+              `,
+              [...ids, limit, offset],
+            );
 
-          // Query para total (sin paginación)
-          totalResult = await this.clienteRepository.query(
-            `
+            // Query para total (sin paginación)
+            totalResult = await this.clienteRepository.query(
+              `
   SELECT COUNT(*) AS total
 FROM Clientes
-WHERE Id = ?   -- 🔹 aquí colocas el ID del cliente que quieres consultar
-ORDER BY Id DESC
+WHERE Id IN (${placeholders})    -- 🔹 aquí colocas el ID del cliente que quieres consultar
+ORDER BY Id ASC
 
   `,
-  [cliente]
-          );
+              [...ids],
+            );
+          }
           break;
       }
 
@@ -257,7 +268,6 @@ ORDER BY Id DESC
       const data = clientes.map((item) => ({
         ...item,
         id: Number(item.id),
-        idCliente: Number(item.idCliente),
       }));
 
       const total = Number(totalResult[0]?.total || 0);
@@ -281,7 +291,9 @@ ORDER BY Id DESC
     }
   }
 
-  //Obtener todos los clientes
+  // ========================================
+  // 🔹 OBTENER UN LISTADO DE CLIENTES
+  // ========================================
   async getAllListClientes(
     idUser: number,
     cliente: number,
@@ -299,77 +311,47 @@ SELECT
   Nombre AS nombre,
   ApellidoPaterno AS apellidoPaterno,
   ApellidoMaterno AS apellidoMaterno,
-  Logotipo AS logotipo,
-  IdPadre AS idPadre
+  Logotipo AS logotipo
 FROM Clientes
 WHERE Estatus = 1
-ORDER BY Id DESC;
+ORDER BY Id ASC;
             `,
           );
           break;
 
         default:
-          // Usuarios normales - solo sus regiones asignadas
-          clientes = await this.clienteRepository.query(
-            `
+            // Usuarios normales - solo sus regiones asignadas
+           const { ids, placeholders } = await getClienteHijos(this.clienteRepository, cliente);
+          
+          // Si no hay IDs, retornar resultados vacíos
+          if (ids.length === 0 || !placeholders) {
+            clientes = [];
+          } else {
+            clientes = await this.clienteRepository.query(
+              `
 SELECT
   Id AS id,
   Nombre AS nombre,
   ApellidoPaterno AS apellidoPaterno,
   ApellidoMaterno AS apellidoMaterno,
-  Logotipo AS logotipo,
-  IdPadre AS idPadre
+  Logotipo AS logotipo
 FROM Clientes
-WHERE Id = ?   -- 🔹 aquí colocas el ID del cliente que quieres consultar
+WHERE Id IN (${placeholders})  -- 🔹 aquí colocas el ID del cliente que quieres consultar
   AND Estatus = 1
-ORDER BY Id DESC;
+ORDER BY Id ASC;
 
-            `,
-            [cliente],
-          );
+              `,
+              [...ids],
+            );
+          }
           break;
       }
 
-      // Obtener todos los logotipos de los padres para evitar múltiples consultas
-      const idsPadres = [...new Set(
-        clientes
-          .map((c) => c.idPadre)
-          .filter((id) => id !== null && id !== undefined)
-      )];
-      
-      const padresConLogotipo = idsPadres.length > 0 
-        ? await this.clienteRepository.query(
-            `
-SELECT Id, Logotipo
-FROM Clientes
-WHERE Id IN (${idsPadres.map(() => '?').join(',')})
-            `,
-            idsPadres,
-          )
-        : [];
-
-      // Crear un mapa de idPadre -> logotipo para acceso rápido
-      const logotiposPadres = new Map(
-        padresConLogotipo.map((p) => [Number(p.Id), p.Logotipo]),
-      );
-
-      // 🔥 Forzamos ids a number y aplicamos lógica de logotipo del padre
-      const data = clientes.map((item) => {
-        let logotipo = item.logotipo;
-        
-        // Si no tiene logotipo y tiene padre, usar el logotipo del padre
-        if ((!logotipo || logotipo === null || logotipo === '') && item.idPadre) {
-          logotipo = logotiposPadres.get(Number(item.idPadre)) || null;
-        }
-
-        return {
-          ...item,
-          id: Number(item.id),
-          idCliente: Number(item.id),
-          idPadre: item.idPadre ? Number(item.idPadre) : null,
-          logotipo: logotipo,
-        };
-      });
+      // 🔥 Forzamos ids a number y agregamos nombreCompleto
+      const data = clientes.map((item) => ({
+        ...item,
+        id: Number(item.id),
+      }));
 
       const result: ApiResponseCommon = {
         data: data,
