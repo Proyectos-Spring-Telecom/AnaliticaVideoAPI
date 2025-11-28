@@ -35,8 +35,11 @@ export class InstalacionEquipoService {
         const create = await this.instalacionEquipo.create(createInstalacionEquipoDto);
         const saved = await this.instalacionEquipo.save(create);
         if(saved.id > 0){
-           isAvailable.idEstadoEquipo = EstadoEquipoEnum.INSTALADO;
-           await this.equiposRepository.update(isAvailable.id,isAvailable);
+           // Actualizar el estatus del equipo a INSTALADO para que no se pueda volver a instalar
+           await this.equiposRepository.update(
+             isAvailable.id,
+             { idEstadoEquipo: EstadoEquipoEnum.INSTALADO }
+           );
         }
         
         // Obtener la instalación completa con relaciones
@@ -91,10 +94,27 @@ export class InstalacionEquipoService {
         if (ids.length === 0 || !placeholders) {
           data = [];
         } else {
-          data = await this.instalacionEquipo.find({
-            where: { idCliente: In(ids) },
-            relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
-          });
+          // Filtrar por idCliente de la instalación O por idCliente del equipo relacionado
+          const instalaciones = await this.instalacionEquipo.query(
+            `
+SELECT DISTINCT ie.Id
+FROM InstalacionEquipo ie
+LEFT JOIN Equipos e ON ie.IdEquipo = e.Id
+WHERE ie.IdCliente IN (${placeholders})
+   OR e.IdCliente IN (${placeholders});
+            `,
+            [...ids, ...ids],
+          );
+
+          const instalacionesIds = instalaciones.map((ie: any) => ie.Id);
+          if (instalacionesIds.length > 0) {
+            data = await this.instalacionEquipo.find({
+              where: { id: In(instalacionesIds) },
+              relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+            });
+          } else {
+            data = [];
+          }
         }
       } else {
         // Sin cliente - obtener todas

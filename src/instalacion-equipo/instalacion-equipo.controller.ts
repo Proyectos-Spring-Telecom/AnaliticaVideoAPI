@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { InstalacionEquipoService } from './instalacion-equipo.service';
 import { CreateInstalacionEquipoDto } from './dto/create-instalacion-equipo.dto';
 import { UpdateInstalacionEquipoDto } from './dto/update-instalacion-equipo.dto';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 @Controller('instalacion-equipo')
 export class InstalacionEquipoController {
