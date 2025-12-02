@@ -18,7 +18,7 @@ export class AuthService {
 
         try {
             const user = await this.usuariosRepository.findOne({
-                relations: ['idRol2'],
+                relations: ['idRol2','idCliente2'],
                 where: { userName: loginAuthDto.userName, estatus: 1 },
             });
             if (
