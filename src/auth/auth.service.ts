@@ -66,6 +66,15 @@ export class AuthService {
                 rolNombre: user.idRol2.nombre,
                 token: this.jwtService.sign(payload),
                 permisos: permisos,
+                logo: user.idCliente2?.logotipo,
+                nombreCliente: user.idCliente2?.nombre,
+                apellidoPaternoCliente: user.idCliente2?.apellidoPaterno,
+                apellidoMaternoCliente: user.idCliente2?.apellidoMaterno,
+                telefonoCliente: user.idCliente2?.telefono,
+                emailCliente: user.idCliente2?.correo,
+                direccionCliente: user.idCliente2?.calle,
+                ciudadCliente: user.idCliente2?.municipio,
+                estadoCliente: user.idCliente2?.estado,
             };
         } catch (error) {
             if (error instanceof HttpException) {
