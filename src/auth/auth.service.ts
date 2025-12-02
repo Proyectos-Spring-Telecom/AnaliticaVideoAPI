@@ -63,6 +63,7 @@ export class AuthService {
                 fotoPerfil: `${user.fotoPerfil}`,
                 userName: `${user.userName}`,
                 rol: user.idRol,
+                rolNombre: user.idRol2.nombre,
                 token: this.jwtService.sign(payload),
                 permisos: permisos,
             };
