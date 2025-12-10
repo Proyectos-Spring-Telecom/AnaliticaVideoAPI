@@ -104,29 +104,34 @@ export class IncidenciasService {
 
   async findUltimoHit(numeroSerie: string): Promise<any> {
     try {
-      const incidencia = await this.incidenciaRepository.find({
-        where: { idDispositivo: numeroSerie },
-        order: { fecha: 'DESC' },
-        take: 1,
-      });
-      console.log(incidencia,"hit")
-      if (incidencia.length === 0) return null;
+      const incidencia = await this.incidenciaRepository
+        .createQueryBuilder('i')
+        .select([
+          'i.id AS id',
+          'i.genero AS genero',
+          'i.edad AS edad',
+          'i.estadoAnimo AS estadoAnimo',
+          'i.idDispositivo AS idDispositivo',
+          'i.tiempoEnEscena AS tiempoEnEscena',
+          'i.foto AS foto',
+          'DATE_FORMAT(i.fecha, "%Y-%m-%d %H:%i:%s") AS fecha',
+        ])
+        .where('i.idDispositivo = :numeroSerie', { numeroSerie })
+        .orderBy('i.fecha', 'DESC')
+        .limit(1)
+        .getRawOne();
 
-      const i = incidencia[0];
+      if (!incidencia) return null;
+
       return {
-        id: i.id,
-        genero: i.genero,
-        edad: i.edad,
-        estadoAnimo: i.estadoAnimo,
-        idDispositivo: i.idDispositivo,
-        tiempoEnEscena: i.tiempoEnEscena,
-        foto: i.foto,
-        fecha: i.fecha
-          ? new Date(i.fecha).toLocaleString('es-MX', {
-            timeZone: 'America/Mexico_City',
-            hour12: false
-          }).replace(',', '')
-          : null,
+        id: incidencia.id,
+        genero: incidencia.genero,
+        edad: incidencia.edad,
+        estadoAnimo: incidencia.estadoAnimo,
+        idDispositivo: incidencia.idDispositivo,
+        tiempoEnEscena: incidencia.tiempoEnEscena,
+        foto: incidencia.foto,
+        fecha: incidencia.fecha,
       };
     } catch (error) {
       throw new InternalServerErrorException('Error obteniendo el último hit');
