@@ -154,24 +154,34 @@ export class IncidenciasService {
         order: { fecha: 'DESC' },
       });
 
-      // Formatear salida
-      return incidencias.map((i) => ({
-        id: i.id,
-        genero: i.genero,
-        edad: i.edad,
-        estadoAnimo: i.estadoAnimo,
-        idDispositivo: i.idDispositivo,
-        tiempoEnEscena: i.tiempoEnEscena,
-        foto: i.foto,
-        fecha: i.fecha
-          ? new Date(i.fecha)
-              .toLocaleString('es-MX', {
-                timeZone: 'America/Mexico_City',
-                hour12: false,
-              })
-              .replace(',', '')
-          : null,
-      }));
+      // Formatear salida en formato YYYY-MM-DD HH:mm:ss
+      return incidencias.map((i) => {
+        let fechaFormateada: string | null = null;
+        if (i.fecha) {
+          const fecha = new Date(i.fecha);
+          
+          // Obtener componentes de fecha en zona horaria de México
+          const año = fecha.toLocaleString('en-US', { year: 'numeric', timeZone: 'America/Mexico_City' });
+          const mes = fecha.toLocaleString('en-US', { month: '2-digit', timeZone: 'America/Mexico_City' });
+          const dia = fecha.toLocaleString('en-US', { day: '2-digit', timeZone: 'America/Mexico_City' });
+          const horas = fecha.toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
+          const minutos = fecha.toLocaleString('en-US', { minute: '2-digit', timeZone: 'America/Mexico_City' });
+          const segundos = fecha.toLocaleString('en-US', { second: '2-digit', timeZone: 'America/Mexico_City' });
+          
+          fechaFormateada = `${año}-${mes}-${dia} ${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}:${segundos.padStart(2, '0')}`;
+        }
+        
+        return {
+          id: i.id,
+          genero: i.genero,
+          edad: i.edad,
+          estadoAnimo: i.estadoAnimo,
+          idDispositivo: i.idDispositivo,
+          tiempoEnEscena: i.tiempoEnEscena,
+          foto: i.foto,
+          fecha: fechaFormateada,
+        };
+      });
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException('Error consultando incidencias');
@@ -213,24 +223,34 @@ export class IncidenciasService {
         take: limit,
       });
 
-      // Formatear fechas al horario local de México
-      const formattedData = data.map((i) => ({
-        id: i.id,
-        genero: i.genero,
-        edad: i.edad,
-        estadoAnimo: i.estadoAnimo,
-        idDispositivo: i.idDispositivo,
-        tiempoEnEscena: i.tiempoEnEscena,
-        foto: i.foto,
-        fecha: i.fecha
-          ? new Date(i.fecha)
-              .toLocaleString('es-MX', {
-                timeZone: 'America/Mexico_City',
-                hour12: false,
-              })
-              .replace(',', '')
-          : null,
-      }));
+      // Formatear fechas en formato YYYY-MM-DD HH:mm:ss
+      const formattedData = data.map((i) => {
+        let fechaFormateada: string | null = null;
+        if (i.fecha) {
+          const fecha = new Date(i.fecha);
+          
+          // Obtener componentes de fecha en zona horaria de México
+          const año = fecha.toLocaleString('en-US', { year: 'numeric', timeZone: 'America/Mexico_City' });
+          const mes = fecha.toLocaleString('en-US', { month: '2-digit', timeZone: 'America/Mexico_City' });
+          const dia = fecha.toLocaleString('en-US', { day: '2-digit', timeZone: 'America/Mexico_City' });
+          const horas = fecha.toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
+          const minutos = fecha.toLocaleString('en-US', { minute: '2-digit', timeZone: 'America/Mexico_City' });
+          const segundos = fecha.toLocaleString('en-US', { second: '2-digit', timeZone: 'America/Mexico_City' });
+          
+          fechaFormateada = `${año}-${mes}-${dia} ${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}:${segundos.padStart(2, '0')}`;
+        }
+        
+        return {
+          id: i.id,
+          genero: i.genero,
+          edad: i.edad,
+          estadoAnimo: i.estadoAnimo,
+          idDispositivo: i.idDispositivo,
+          tiempoEnEscena: i.tiempoEnEscena,
+          foto: i.foto,
+          fecha: fechaFormateada,
+        };
+      });
 
       const totalPages = Math.ceil(total / limit);
 
