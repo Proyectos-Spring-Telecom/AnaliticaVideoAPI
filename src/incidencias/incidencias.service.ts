@@ -145,42 +145,34 @@ export class IncidenciasService {
       const inicio = new Date(`${fechaInicio} 00:00:00`);
       const fin = new Date(`${fechaFin} 23:59:59`);
 
-      // Buscar incidencias en el rango filtradas por idDispositivo
-      const incidencias = await this.incidenciaRepository.find({
-        where: { 
-          fecha: Between(inicio, fin),
-          idDispositivo: numeroSerie
-        },
-        order: { fecha: 'DESC' },
-      });
+      // Buscar incidencias en el rango filtradas por idDispositivo usando query builder para formatear fecha directamente
+      const incidencias = await this.incidenciaRepository
+        .createQueryBuilder('i')
+        .select([
+          'i.id AS id',
+          'i.genero AS genero',
+          'i.edad AS edad',
+          'i.estadoAnimo AS estadoAnimo',
+          'i.idDispositivo AS idDispositivo',
+          'i.tiempoEnEscena AS tiempoEnEscena',
+          'i.foto AS foto',
+          'DATE_FORMAT(i.fecha, "%Y-%m-%d %H:%i:%s") AS fecha',
+        ])
+        .where('i.fecha BETWEEN :inicio AND :fin', { inicio, fin })
+        .andWhere('i.idDispositivo = :numeroSerie', { numeroSerie })
+        .orderBy('i.fecha', 'DESC')
+        .getRawMany();
 
-      // Formatear salida en formato YYYY-MM-DD HH:mm:ss
-      return incidencias.map((i) => {
-        let fechaFormateada: string | null = null;
-        if (i.fecha) {
-          const fecha = new Date(i.fecha);
-          
-          const año = fecha.getFullYear();
-          const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-          const dia = String(fecha.getDate()).padStart(2, '0');
-          const horas = String(fecha.getHours()).padStart(2, '0');
-          const minutos = String(fecha.getMinutes()).padStart(2, '0');
-          const segundos = String(fecha.getSeconds()).padStart(2, '0');
-          
-          fechaFormateada = `${año}-${mes}-${dia} ${horas}:${minutos}:${segundos}`;
-        }
-        
-        return {
-          id: i.id,
-          genero: i.genero,
-          edad: i.edad,
-          estadoAnimo: i.estadoAnimo,
-          idDispositivo: i.idDispositivo,
-          tiempoEnEscena: i.tiempoEnEscena,
-          foto: i.foto,
-          fecha: fechaFormateada,
-        };
-      });
+      return incidencias.map((i) => ({
+        id: i.id,
+        genero: i.genero,
+        edad: i.edad,
+        estadoAnimo: i.estadoAnimo,
+        idDispositivo: i.idDispositivo,
+        tiempoEnEscena: i.tiempoEnEscena,
+        foto: i.foto,
+        fecha: i.fecha,
+      }));
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException('Error consultando incidencias');
@@ -211,44 +203,46 @@ export class IncidenciasService {
       const fin = new Date(`${fechaFin} 23:59:59`);
       const skip = (page - 1) * limit;
 
-      // Consulta principal filtrada por idDispositivo
-      const [data, total] = await this.incidenciaRepository.findAndCount({
-        where: { 
-          fecha: Between(inicio, fin),
-          idDispositivo: numeroSerie
-        },
-        order: { fecha: 'DESC' },
-        skip,
-        take: limit,
-      });
+      // Consulta principal filtrada por idDispositivo usando query builder para formatear fecha directamente
+      const queryBuilder = this.incidenciaRepository
+        .createQueryBuilder('i')
+        .select([
+          'i.id AS id',
+          'i.genero AS genero',
+          'i.edad AS edad',
+          'i.estadoAnimo AS estadoAnimo',
+          'i.idDispositivo AS idDispositivo',
+          'i.tiempoEnEscena AS tiempoEnEscena',
+          'i.foto AS foto',
+          'DATE_FORMAT(i.fecha, "%Y-%m-%d %H:%i:%s") AS fecha',
+        ])
+        .where('i.fecha BETWEEN :inicio AND :fin', { inicio, fin })
+        .andWhere('i.idDispositivo = :numeroSerie', { numeroSerie })
+        .orderBy('i.fecha', 'DESC')
+        .skip(skip)
+        .take(limit);
 
-      // Formatear fechas en formato YYYY-MM-DD HH:mm:ss
-      const formattedData = data.map((i) => {
-        let fechaFormateada: string | null = null;
-        if (i.fecha) {
-          const fecha = new Date(i.fecha);
-          
-          const año = fecha.getFullYear();
-          const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-          const dia = String(fecha.getDate()).padStart(2, '0');
-          const horas = String(fecha.getHours()).padStart(2, '0');
-          const minutos = String(fecha.getMinutes()).padStart(2, '0');
-          const segundos = String(fecha.getSeconds()).padStart(2, '0');
-          
-          fechaFormateada = `${año}-${mes}-${dia} ${horas}:${minutos}:${segundos}`;
-        }
-        
-        return {
-          id: i.id,
-          genero: i.genero,
-          edad: i.edad,
-          estadoAnimo: i.estadoAnimo,
-          idDispositivo: i.idDispositivo,
-          tiempoEnEscena: i.tiempoEnEscena,
-          foto: i.foto,
-          fecha: fechaFormateada,
-        };
-      });
+      const data = await queryBuilder.getRawMany();
+      
+      // Obtener total sin paginación
+      const totalResult = await this.incidenciaRepository
+        .createQueryBuilder('i')
+        .where('i.fecha BETWEEN :inicio AND :fin', { inicio, fin })
+        .andWhere('i.idDispositivo = :numeroSerie', { numeroSerie })
+        .getCount();
+
+      const total = totalResult;
+
+      const formattedData = data.map((i) => ({
+        id: i.id,
+        genero: i.genero,
+        edad: i.edad,
+        estadoAnimo: i.estadoAnimo,
+        idDispositivo: i.idDispositivo,
+        tiempoEnEscena: i.tiempoEnEscena,
+        foto: i.foto,
+        fecha: i.fecha,
+      }));
 
       const totalPages = Math.ceil(total / limit);
 
