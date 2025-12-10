@@ -160,15 +160,14 @@ export class IncidenciasService {
         if (i.fecha) {
           const fecha = new Date(i.fecha);
           
-          // Obtener componentes de fecha en zona horaria de México
-          const año = fecha.toLocaleString('en-US', { year: 'numeric', timeZone: 'America/Mexico_City' });
-          const mes = fecha.toLocaleString('en-US', { month: '2-digit', timeZone: 'America/Mexico_City' });
-          const dia = fecha.toLocaleString('en-US', { day: '2-digit', timeZone: 'America/Mexico_City' });
-          const horas = fecha.toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
-          const minutos = fecha.toLocaleString('en-US', { minute: '2-digit', timeZone: 'America/Mexico_City' });
-          const segundos = fecha.toLocaleString('en-US', { second: '2-digit', timeZone: 'America/Mexico_City' });
+          const año = fecha.getFullYear();
+          const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+          const dia = String(fecha.getDate()).padStart(2, '0');
+          const horas = String(fecha.getHours()).padStart(2, '0');
+          const minutos = String(fecha.getMinutes()).padStart(2, '0');
+          const segundos = String(fecha.getSeconds()).padStart(2, '0');
           
-          fechaFormateada = `${año}-${mes}-${dia} ${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}:${segundos.padStart(2, '0')}`;
+          fechaFormateada = `${año}-${mes}-${dia} ${horas}:${minutos}:${segundos}`;
         }
         
         return {
@@ -229,15 +228,14 @@ export class IncidenciasService {
         if (i.fecha) {
           const fecha = new Date(i.fecha);
           
-          // Obtener componentes de fecha en zona horaria de México
-          const año = fecha.toLocaleString('en-US', { year: 'numeric', timeZone: 'America/Mexico_City' });
-          const mes = fecha.toLocaleString('en-US', { month: '2-digit', timeZone: 'America/Mexico_City' });
-          const dia = fecha.toLocaleString('en-US', { day: '2-digit', timeZone: 'America/Mexico_City' });
-          const horas = fecha.toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
-          const minutos = fecha.toLocaleString('en-US', { minute: '2-digit', timeZone: 'America/Mexico_City' });
-          const segundos = fecha.toLocaleString('en-US', { second: '2-digit', timeZone: 'America/Mexico_City' });
+          const año = fecha.getFullYear();
+          const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+          const dia = String(fecha.getDate()).padStart(2, '0');
+          const horas = String(fecha.getHours()).padStart(2, '0');
+          const minutos = String(fecha.getMinutes()).padStart(2, '0');
+          const segundos = String(fecha.getSeconds()).padStart(2, '0');
           
-          fechaFormateada = `${año}-${mes}-${dia} ${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}:${segundos.padStart(2, '0')}`;
+          fechaFormateada = `${año}-${mes}-${dia} ${horas}:${minutos}:${segundos}`;
         }
         
         return {
