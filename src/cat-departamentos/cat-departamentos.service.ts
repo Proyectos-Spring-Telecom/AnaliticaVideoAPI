@@ -85,7 +85,7 @@ export class CatDepartamentosService {
     try {
       const skip = (page - 1) * limit;
       const [data, total] = await this.departamentoRepository.findAndCount({
-        where: { idCliente: idCliente, estatus: 1 },
+        where: { idCliente: idCliente },
         relations: ['cliente'],
         skip,
         take: limit,
