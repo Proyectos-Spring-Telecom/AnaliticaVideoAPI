@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional } from "class-validator";
 
 export class CreateInstalacionEquipoDto {
   @ApiProperty({
@@ -37,4 +37,21 @@ export class CreateInstalacionEquipoDto {
   @IsNumber()
   @IsNotEmpty()
   idSedeCentral?: number;
+
+  @ApiProperty({
+    description: "Número de piso donde se encuentra el equipo",
+    example: 3,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  nroPiso?: number;
+
+  @ApiProperty({
+    description: "ID del departamento donde se encuentra el equipo",
+    example: 1,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  idDepartamento: number;
 }

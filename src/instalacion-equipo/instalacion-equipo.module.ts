@@ -7,9 +7,10 @@ import { InstalacionEquipo } from 'src/entities/InstalacionEquipo';
 import { BitacoraModule } from 'src/bitacora/bitacora.module';
 import { InstalacionCentral } from 'src/entities/InstalacionCentral';
 import { Clientes } from 'src/entities/Clientes';
+import { CatDepartamentos } from 'src/entities/CatDepartamentos';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Equipos,InstalacionEquipo,InstalacionCentral, Clientes]), BitacoraModule],
+  imports:[TypeOrmModule.forFeature([Equipos,InstalacionEquipo,InstalacionCentral, Clientes, CatDepartamentos]), BitacoraModule],
   controllers: [InstalacionEquipoController],
   providers: [InstalacionEquipoService],
 })

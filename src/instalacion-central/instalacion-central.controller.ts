@@ -40,6 +40,15 @@ export class InstalacionCentralController {
     return this.instalacionCentralService.findAllPaginated(page, limit, +cliente, +rol);
   }
 
+  @Get('pisos/:idSedeCentral')
+  @ApiOperation({
+    summary: 'Obtener arreglo de pisos por id de sede central',
+    description: 'Devuelve un arreglo del 1 al número de pisos de la instalación central especificada',
+  })
+  getPisos(@Param('idSedeCentral') idSedeCentral: number) {
+    return this.instalacionCentralService.getPisos(+idSedeCentral);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary:'Obtener instalacion por id'

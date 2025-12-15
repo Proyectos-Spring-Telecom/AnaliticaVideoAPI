@@ -18,6 +18,7 @@ import { IncidenciasModule } from './incidencias/incidencias.module';
 import { InstalacionCentralModule } from './instalacion-central/instalacion-central.module';
 import { InstalacionEquipoModule } from './instalacion-equipo/instalacion-equipo.module';
 import { S3Module } from './s3/s3.module';
+import { CatDepartamentosModule } from './cat-departamentos/cat-departamentos.module';
 import Joi from 'joi';
 
 @Module({
@@ -77,7 +78,8 @@ import Joi from 'joi';
     IncidenciasModule,
     InstalacionCentralModule,
     InstalacionEquipoModule,
-    S3Module],
+    S3Module,
+    CatDepartamentosModule],
   controllers: [AppController],
   providers: [MailServiceService],
 })

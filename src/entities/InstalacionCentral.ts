@@ -25,7 +25,11 @@ export class InstalacionCentral {
 
   @Column({ type: "double", name: "Lng" })
   lng: number;
-    @Column("tinyint", { name: "Estatus", default: () => "'1'" })
+  
+  @Column({ type: "int", name: "NroPisos", nullable: true })
+  nroPisos: number;
+  
+  @Column("tinyint", { name: "Estatus", default: () => "'1'" })
   estatus: number;
 
   @ManyToOne(() => Clientes, (cliente) => cliente.instalaciones, {
