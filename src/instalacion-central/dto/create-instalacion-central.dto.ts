@@ -35,4 +35,13 @@ export class CreateInstalacionCentralDto {
     @IsNotEmpty()
    lng: number;
 
+   @ApiProperty({
+     description: 'Número de pisos de la instalación',
+     example: 3,
+     required: false,
+   })
+   @IsOptional()
+   @IsNumber()
+   nroPisos?: number;
+
 }

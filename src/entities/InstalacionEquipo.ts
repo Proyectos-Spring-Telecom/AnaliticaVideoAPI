@@ -10,6 +10,7 @@ import {
 import { Clientes } from "./Clientes";
 import { Equipos } from "./Equipos";
 import { InstalacionCentral } from "./InstalacionCentral";
+import { CatDepartamentos } from "./CatDepartamentos";
 // Asegúrate de tener esta entidad
 
 @Entity({ name: "InstalacionEquipo" })
@@ -43,6 +44,11 @@ export class InstalacionEquipo {
   @Column({ type: "bigint", name: "IdSedeCentral", nullable: true })
   idSedeCentral: number;
 
+  @Column({ type: "int", name: "NroPiso", nullable: true })
+  nroPiso: number;
+
+  @Column({ type: "bigint", name: "IdDepartamento", nullable: true })
+  idDepartamento: number;
 
   @ManyToOne(() => Clientes, (cliente) => cliente.instalacionesEquipo, { nullable: true })
   @JoinColumn({ name: "IdCliente", referencedColumnName: "id" })
@@ -51,4 +57,8 @@ export class InstalacionEquipo {
     @ManyToOne(() => InstalacionCentral, (instalacionCentral) => instalacionCentral.instalaciones, { nullable: true })
   @JoinColumn({ name: "IdSedeCentral", referencedColumnName: "id" })
   instalacionCentral: InstalacionCentral;
+
+  @ManyToOne(() => CatDepartamentos, (departamento) => departamento.instalacionesEquipo, { nullable: true })
+  @JoinColumn({ name: "IdDepartamento", referencedColumnName: "id" })
+  departamento: CatDepartamentos;
 }

@@ -40,6 +40,7 @@ export class InstalacionCentralService {
           id: instalacionGuardada.id,
           nombre: createInstalacionCentralDto.nombre || `${createInstalacionCentralDto.lat} ${createInstalacionCentralDto.lng}` || '',
           nombreInstalacionCentral: instalacionGuardada.nombre || createInstalacionCentralDto.nombre || `${createInstalacionCentralDto.lat} ${createInstalacionCentralDto.lng}` || '',
+          nroPisos: instalacionGuardada.nroPisos || createInstalacionCentralDto.nroPisos || null,
         } as any,
       };
       return result;
@@ -147,6 +148,7 @@ export class InstalacionCentralService {
           id: Number(rest.id),
           idCliente: Number(rest.idCliente),
           nombreInstalacionCentral: rest.nombre || null,
+          nroPisos: rest.nroPisos || null,
           nombreCliente,
           direccion,
           nombreEncargado: c?.nombreEncargado || null,
@@ -278,6 +280,7 @@ export class InstalacionCentralService {
           id: Number(rest.id),
           idCliente: Number(rest.idCliente),
           nombreInstalacionCentral: rest.nombre || null,
+          nroPisos: rest.nroPisos || null,
           nombreCliente,
           direccion,
           nombreEncargado: c?.nombreEncargado || null,
@@ -347,6 +350,7 @@ export class InstalacionCentralService {
       const response = {
         ...data,
         nombreInstalacionCentral: data.nombre || null,
+        nroPisos: data.nroPisos || null,
         instalaciones: instalacionesMapeadas,
       };
       
@@ -374,6 +378,7 @@ export class InstalacionCentralService {
           id: id,
           nombre: updateInstalacionCentralDto.nombre || `${updateInstalacionCentralDto.lat} ${updateInstalacionCentralDto.lng}` || '',
           nombreInstalacionCentral: instalacionActualizada?.nombre || updateInstalacionCentralDto.nombre || null,
+          nroPisos: instalacionActualizada?.nroPisos || updateInstalacionCentralDto.nroPisos || null,
         } as any,
       };
       return result
@@ -397,6 +402,7 @@ export class InstalacionCentralService {
           id: id,
           nombre: instalacion.nombre || `${instalacion.lat} ${instalacion.lng}` || '',
           nombreInstalacionCentral: instalacion.nombre || null,
+          nroPisos: instalacion.nroPisos || null,
         } as any,
       };
       return result;
@@ -419,11 +425,38 @@ export class InstalacionCentralService {
           id: id,
           nombre: instalacion.nombre || `${instalacion.lat} ${instalacion.lng}` || '',
           nombreInstalacionCentral: instalacion.nombre || null,
+          nroPisos: instalacion.nroPisos || null,
         } as any,
       };
       return result;
     } catch (error) {
 
+    }
+  }
+
+  async getPisos(idSedeCentral: number) {
+    try {
+      const instalacion = await this.instalacionCentralRepository.findOne({ where: { id: idSedeCentral } });
+      if (!instalacion) {
+        throw new ConflictException(`La instalación central con el id ${idSedeCentral} no existe`);
+      }
+      
+      const nroPisos = instalacion.nroPisos || 0;
+      
+      // Generar arreglo del 1 al nroPisos
+      const pisos = Array.from({ length: nroPisos }, (_, i) => i + 1);
+      
+      const result: ApiResponseCommon = {
+        data: [{
+          idSedeCentral: idSedeCentral,
+          pisos: pisos,
+        }] as any,
+      };
+      
+      return result;
+    } catch (error) {
+      if (error instanceof ConflictException) throw error;
+      throw new Error(error);
     }
   }
 }

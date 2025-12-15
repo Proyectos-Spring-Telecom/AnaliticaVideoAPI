@@ -45,7 +45,7 @@ export class InstalacionEquipoService {
         // Obtener la instalación completa con relaciones
         const instalacionCompleta = await this.instalacionEquipo.findOne({
           where: { id: saved.id },
-          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente','departamento']
         });
         
         const querylogger = { createInstalacionEquipoDto };
@@ -65,6 +65,9 @@ export class InstalacionEquipoService {
           data: {
             id: saved.id,
             nombre: `${isAvailable.numeroSerie}` || '',
+            nroPiso: instalacionCompleta?.nroPiso || null,
+            idDepartamento: instalacionCompleta?.idDepartamento || null,
+            nombreDepartamento: instalacionCompleta?.departamento?.nombre || null,
             equipo: instalacionCompleta?.equipo || null,
             instalacionCentral: instalacionCompleta?.instalacionCentral || null,
           },
@@ -85,7 +88,7 @@ export class InstalacionEquipoService {
       if (rol === 1) {
         // SuperAdministrador - obtiene todas las instalaciones
         data = await this.instalacionEquipo.find({
-          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente','departamento']
         });
       } else if (cliente) {
         // Usuarios normales - solo instalaciones del cliente actual y sus hijos (sin el padre)
@@ -110,7 +113,7 @@ WHERE ie.IdCliente IN (${placeholders})
           if (instalacionesIds.length > 0) {
             data = await this.instalacionEquipo.find({
               where: { id: In(instalacionesIds) },
-              relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+              relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente','departamento']
             });
           } else {
             data = [];
@@ -119,7 +122,7 @@ WHERE ie.IdCliente IN (${placeholders})
       } else {
         // Sin cliente - obtener todas
         data = await this.instalacionEquipo.find({
-          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+          relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente','departamento']
         });
       }
        
@@ -135,6 +138,9 @@ WHERE ie.IdCliente IN (${placeholders})
            fechaActualizacion: item.fechaActualizacion,
            idCliente: item.idCliente,
            idSedeCentral: item.idSedeCentral,
+           nroPiso: item.nroPiso || null,
+           idDepartamento: item.idDepartamento || null,
+           nombreDepartamento: item.departamento?.nombre || null,
          };
          
          // Incluir equipo completo con todas sus propiedades
@@ -186,13 +192,16 @@ WHERE ie.IdCliente IN (${placeholders})
     try {
       const instalacion = await this.instalacionEquipo.findOne({
         where:{id:id},
-        relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+        relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente','departamento']
       })
       if(!instalacion) throw new NotFoundException('No se ha encontrado la instalacion buscada')
       
       // Agregar nombreInstalacionCentral y asegurar que el equipo completo esté incluido
       const response = {
         ...instalacion,
+        nroPiso: instalacion.nroPiso || null,
+        idDepartamento: instalacion.idDepartamento || null,
+        nombreDepartamento: instalacion.departamento?.nombre || null,
         equipo: instalacion.equipo ? {
           ...instalacion.equipo,
         } : null,
@@ -212,7 +221,7 @@ WHERE ie.IdCliente IN (${placeholders})
     try {
       const instalacion = await this.instalacionEquipo.findOne({ 
         where: { id: id },
-        relations:['equipo','instalacionCentral','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+        relations:['equipo','instalacionCentral','equipo.modelo','equipo.estadoEquipo','equipo.cliente','departamento']
       });
       if (!instalacion) {
         throw new ConflictException(`La instalacion con el id ${id} no existe`);
@@ -222,7 +231,7 @@ WHERE ie.IdCliente IN (${placeholders})
       // Obtener la instalación actualizada con todas las relaciones
       const instalacionActualizada = await this.instalacionEquipo.findOne({
         where: { id: id },
-        relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente']
+        relations:['equipo','instalacionCentral','instalacionCentral.cliente','equipo.modelo','equipo.estadoEquipo','equipo.cliente','departamento']
       });
       
       const result = {
@@ -231,6 +240,9 @@ WHERE ie.IdCliente IN (${placeholders})
         data: {
           id: id,
           nombre: `${updateInstalacionEquipoDto.lat} ${updateInstalacionEquipoDto.lng}` || '',
+          nroPiso: instalacionActualizada?.nroPiso || updateInstalacionEquipoDto.nroPiso || null,
+          idDepartamento: instalacionActualizada?.idDepartamento || updateInstalacionEquipoDto.idDepartamento || null,
+          nombreDepartamento: instalacionActualizada?.departamento?.nombre || null,
           equipo: instalacionActualizada?.equipo || null,
           instalacionCentral: instalacionActualizada?.instalacionCentral || null,
         },

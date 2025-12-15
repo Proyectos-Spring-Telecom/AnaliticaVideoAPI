@@ -13,6 +13,7 @@ import { applySchema } from "src/utils/schema";
 import { Equipos } from "./Equipos";
 import { InstalacionCentral } from "./InstalacionCentral";
 import { InstalacionEquipo } from "./InstalacionEquipo";
+import { CatDepartamentos } from "./CatDepartamentos";
 
 
 @Index("UQ_Clientes_RFC", ["rfc"], { unique: true })
@@ -141,4 +142,7 @@ export class Clientes {
 
     @OneToMany(() => InstalacionEquipo, (instalacion) => instalacion.cliente)
   instalacionesEquipo: InstalacionEquipo[];
+
+  @OneToMany(() => CatDepartamentos, (departamento) => departamento.cliente)
+  departamentos: CatDepartamentos[];
 }
