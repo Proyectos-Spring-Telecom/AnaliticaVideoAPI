@@ -65,7 +65,8 @@ export class InstalacionCentralService {
             'instalaciones.equipo',
             'instalaciones.equipo.modelo',
             'instalaciones.equipo.estadoEquipo',
-            'instalaciones.equipo.cliente'
+            'instalaciones.equipo.cliente',
+            'instalaciones.departamento'
           ] 
         });
       } else if (cliente) {
@@ -86,7 +87,8 @@ export class InstalacionCentralService {
               'instalaciones.equipo',
               'instalaciones.equipo.modelo',
               'instalaciones.equipo.estadoEquipo',
-              'instalaciones.equipo.cliente'
+              'instalaciones.equipo.cliente',
+              'instalaciones.departamento'
             ] 
           });
         }
@@ -102,7 +104,8 @@ export class InstalacionCentralService {
             'instalaciones.equipo',
             'instalaciones.equipo.modelo',
             'instalaciones.equipo.estadoEquipo',
-            'instalaciones.equipo.cliente'
+            'instalaciones.equipo.cliente',
+            'instalaciones.departamento'
           ] 
         });
       }
@@ -127,6 +130,9 @@ export class InstalacionCentralService {
         // Mapear las instalaciones para asegurar que el equipo completo esté incluido
         const instalacionesMapeadas = rest.instalaciones?.map((instalacion) => ({
           ...instalacion,
+          nroPiso: instalacion.nroPiso || null,
+          idDepartamento: instalacion.idDepartamento || null,
+          nombreDepartamento: instalacion.departamento?.nombre || null,
           equipo: instalacion.equipo ? {
             id: instalacion.equipo.id,
             numeroSerie: instalacion.equipo.numeroSerie,
@@ -184,7 +190,8 @@ export class InstalacionCentralService {
             'instalaciones.equipo',
             'instalaciones.equipo.modelo',
             'instalaciones.equipo.estadoEquipo',
-            'instalaciones.equipo.cliente'
+            'instalaciones.equipo.cliente',
+            'instalaciones.departamento'
           ],
           skip,
           take: limit,
@@ -209,7 +216,8 @@ export class InstalacionCentralService {
               'instalaciones.equipo',
               'instalaciones.equipo.modelo',
               'instalaciones.equipo.estadoEquipo',
-              'instalaciones.equipo.cliente'
+              'instalaciones.equipo.cliente',
+              'instalaciones.departamento'
             ],
             skip,
             take: limit,
@@ -228,7 +236,8 @@ export class InstalacionCentralService {
             'instalaciones.equipo',
             'instalaciones.equipo.modelo',
             'instalaciones.equipo.estadoEquipo',
-            'instalaciones.equipo.cliente'
+            'instalaciones.equipo.cliente',
+            'instalaciones.departamento'
           ],
           skip,
           take: limit,
@@ -259,6 +268,9 @@ export class InstalacionCentralService {
         // Mapear las instalaciones para asegurar que el equipo completo esté incluido
         const instalacionesMapeadas = rest.instalaciones?.map((instalacion) => ({
           ...instalacion,
+          nroPiso: instalacion.nroPiso || null,
+          idDepartamento: instalacion.idDepartamento || null,
+          nombreDepartamento: instalacion.departamento?.nombre || null,
           equipo: instalacion.equipo ? {
             id: instalacion.equipo.id,
             numeroSerie: instalacion.equipo.numeroSerie,
@@ -319,7 +331,8 @@ export class InstalacionCentralService {
           'instalaciones.equipo',
           'instalaciones.equipo.modelo',
           'instalaciones.equipo.estadoEquipo',
-          'instalaciones.equipo.cliente'
+          'instalaciones.equipo.cliente',
+          'instalaciones.departamento'
         ] 
       });
 
@@ -330,6 +343,9 @@ export class InstalacionCentralService {
       // Mapear las instalaciones para asegurar que el equipo completo esté incluido
       const instalacionesMapeadas = data.instalaciones?.map((instalacion) => ({
         ...instalacion,
+        nroPiso: instalacion.nroPiso || null,
+        idDepartamento: instalacion.idDepartamento || null,
+        nombreDepartamento: instalacion.departamento?.nombre || null,
         equipo: instalacion.equipo ? {
           id: instalacion.equipo.id,
           numeroSerie: instalacion.equipo.numeroSerie,
