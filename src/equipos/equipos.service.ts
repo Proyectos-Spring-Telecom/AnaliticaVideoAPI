@@ -293,10 +293,10 @@ WHERE e.IdCliente IN (${placeholders})
 
   async remove(id: number, idUser:number) {
     try {
-      const equipoEliminar = await this.equiposRepository.findOne({
+      const equipoDesactivar = await this.equiposRepository.findOne({
         where: { id: id },
       });
-      if (!equipoEliminar) {
+      if (!equipoDesactivar) {
         throw new NotFoundException(
           `El Equipo con ID: ${id} no fue encontrado.`
         );
@@ -306,7 +306,7 @@ WHERE e.IdCliente IN (${placeholders})
       const querylogger = { id: id, estatus: 0 };
       await this.bitacoraLogger.logToBitacora(
         "Equipos",
-        `Se eliminó el equipo con ID: ${id}.`,
+        `Se desactivó el equipo con ID: ${id}.`,
         "UPDATE",
         querylogger,
         Number(idUser),
@@ -316,10 +316,10 @@ WHERE e.IdCliente IN (${placeholders})
 
       const result: ApiCrudResponse = {
         status: "success",
-        message: "El equipo fue eliminado correctamente.",
+        message: "El equipo fue desactivado correctamente.",
         data: {
           id: id,
-          nombre: `${equipoEliminar.numeroSerie} ` || "",
+          nombre: `${equipoDesactivar.numeroSerie} ` || "",
         },
       };
       return result;
@@ -327,7 +327,7 @@ WHERE e.IdCliente IN (${placeholders})
       const querylogger = { id: id, estatus: 0 };
       await this.bitacoraLogger.logToBitacora(
         "Equipos",
-        `Se eliminó el equipo con ID: ${id}.`,
+        `Se desactivó el equipo con ID: ${id}.`,
         "UPDATE",
         querylogger,
         Number(idUser),
@@ -339,7 +339,61 @@ WHERE e.IdCliente IN (${placeholders})
         throw error;
       }
       throw new InternalServerErrorException({
-        message: `Error al eliminar el equipo con ID: ${id}.`,
+        message: `Error al desactivar el equipo con ID: ${id}.`,
+        error: error.message,
+      });
+    }
+  }
+
+  async activar(id: number, idUser:number) {
+    try {
+      const equipoActivar = await this.equiposRepository.findOne({
+        where: { id: id },
+      });
+      if (!equipoActivar) {
+        throw new NotFoundException(
+          `El Equipo con ID: ${id} no fue encontrado.`
+        );
+      }
+      await this.equiposRepository.update(id, { estatus: 1 });
+
+      const querylogger = { id: id, estatus: 1 };
+      await this.bitacoraLogger.logToBitacora(
+        "Equipos",
+        `Se activó el equipo con ID: ${id}.`,
+        "UPDATE",
+        querylogger,
+        Number(idUser),
+        1,
+        EstatusEnumBitcora.SUCCESS
+      );
+
+      const result: ApiCrudResponse = {
+        status: "success",
+        message: "El equipo fue activado correctamente.",
+        data: {
+          id: id,
+          nombre: `${equipoActivar.numeroSerie} ` || "",
+        },
+      };
+      return result;
+    } catch (error) {
+      const querylogger = { id: id, estatus: 1 };
+      await this.bitacoraLogger.logToBitacora(
+        "Equipos",
+        `Se activó el equipo con ID: ${id}.`,
+        "UPDATE",
+        querylogger,
+        Number(idUser),
+        1,
+        EstatusEnumBitcora.ERROR,
+        error.message
+      );
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        message: `Error al activar el equipo con ID: ${id}.`,
         error: error.message,
       });
     }

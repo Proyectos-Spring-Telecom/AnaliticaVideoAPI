@@ -30,12 +30,12 @@ export class ModelosController {
     return this.modelosService.update(+id, updateModeloDto, req.user.userId);
   }
 
-  @Patch('/desactivar:id')
+  @Patch('/desactivar/:id')
   remove(@Param('id') id: string, @Req() req) {
     return this.modelosService.remove(+id, req.user.userId);
   }
 
-  @Patch('/activar:id')
+  @Patch('/activar/:id')
   activar(@Param('id') id: string, @Req() req) {
     return this.modelosService.activar(+id, req.user.userId);
   }

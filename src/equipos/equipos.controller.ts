@@ -56,8 +56,13 @@ export class EquiposController {
     return this.equiposService.update(+id, updateEquipoDto, req.user.userId);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string,@Req() req:any) {
+  @Patch('/desactivar/:id')
+  remove(@Param('id') id: string, @Req() req:any) {
     return this.equiposService.remove(+id, req.user.userId);
+  }
+
+  @Patch('/activar/:id')
+  activar(@Param('id') id: string, @Req() req:any) {
+    return this.equiposService.activar(+id, req.user.userId);
   }
 }

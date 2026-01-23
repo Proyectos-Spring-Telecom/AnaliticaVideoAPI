@@ -125,7 +125,7 @@ export class ModelosService {
 
       const result: ApiCrudResponse = {
         status: "success",
-        message: "La marca ha sido actualizado correctamente.",
+        message: "El modelo ha sido actualizado correctamente.",
         data: {
           id: id,
           nombre: `${updateModeloDto.nombre}` || "",
@@ -144,7 +144,7 @@ export class ModelosService {
       });
       if (!marcaEliminar) {
         throw new NotFoundException(
-          `La marca con ID: ${id} no fue encontrado.`
+          `El modelo con ID: ${id} no fue encontrado.`
         );
       }
       await this.modeloRepository.update(id, { estatus: 0 });
@@ -152,7 +152,7 @@ export class ModelosService {
       const querylogger = { id: id, estatus: 0 };
       await this.bitacoraLogger.logToBitacora(
         "Marcas",
-        `Se desactivo la marca con ID: ${id}.`,
+        `Se desactivo el modelo con ID: ${id}.`,
         "UPDATE",
         querylogger,
         Number(idUser),
@@ -162,7 +162,7 @@ export class ModelosService {
 
       const result: ApiCrudResponse = {
         status: "success",
-        message: "La marca fue desactivada correctamente.",
+        message: "El modelo fue desactivada correctamente.",
         data: {
           id: id,
           nombre: `${marcaEliminar.nombre} ` || "",
@@ -185,7 +185,7 @@ export class ModelosService {
         throw error;
       }
       throw new InternalServerErrorException({
-        message: `Error al desactivar la marca con ID: ${id}.`,
+        message: `Error al desactivar el modelo con ID: ${id}.`,
         error: error.message,
       });
     }
@@ -198,7 +198,7 @@ export class ModelosService {
       });
       if (!marcaEliminar) {
         throw new NotFoundException(
-          `La marca con ID: ${id} no fue encontrado.`
+          `El modelo con ID: ${id} no fue encontrado.`
         );
       }
       await this.modeloRepository.update(id, { estatus: 1 });
@@ -206,7 +206,7 @@ export class ModelosService {
       const querylogger = { id: id, estatus: 0 };
       await this.bitacoraLogger.logToBitacora(
         "Marcas",
-        `Se activo la marca con ID: ${id}.`,
+        `Se activo el modelo con ID: ${id}.`,
         "UPDATE",
         querylogger,
         Number(idUser),
@@ -216,7 +216,7 @@ export class ModelosService {
 
       const result: ApiCrudResponse = {
         status: "success",
-        message: "La marca fue activado correctamente.",
+        message: "El modelo fue activado correctamente.",
         data: {
           id: id,
           nombre: `${marcaEliminar.nombre} ` || "",
@@ -239,7 +239,7 @@ export class ModelosService {
         throw error;
       }
       throw new InternalServerErrorException({
-        message: `Error al activar la marca con ID: ${id}.`,
+        message: `Error al activar el modelo con ID: ${id}.`,
         error: error.message,
       });
     }

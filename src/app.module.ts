@@ -19,6 +19,7 @@ import { InstalacionCentralModule } from './instalacion-central/instalacion-cent
 import { InstalacionEquipoModule } from './instalacion-equipo/instalacion-equipo.module';
 import { S3Module } from './s3/s3.module';
 import { CatDepartamentosModule } from './cat-departamentos/cat-departamentos.module';
+import { ReportesModule } from './reportes/reportes.module';
 import Joi from 'joi';
 
 @Module({
@@ -79,7 +80,8 @@ import Joi from 'joi';
     InstalacionCentralModule,
     InstalacionEquipoModule,
     S3Module,
-    CatDepartamentosModule],
+    CatDepartamentosModule,
+    ReportesModule],
   controllers: [AppController],
   providers: [MailServiceService],
 })
