@@ -20,6 +20,7 @@ import { InstalacionEquipoModule } from './instalacion-equipo/instalacion-equipo
 import { S3Module } from './s3/s3.module';
 import { CatDepartamentosModule } from './cat-departamentos/cat-departamentos.module';
 import { ReportesModule } from './reportes/reportes.module';
+import { MailServiceModule } from './mail-service/mail-service.module'
 import Joi from 'joi';
 
 @Module({
@@ -50,9 +51,9 @@ import Joi from 'joi';
       autoLoadEntities: false,
       entities: [__dirname + '/entities/*{.ts,.js}'],
       synchronize: false, //Nunca poner en true 
-        bigNumberStrings: false,
+      bigNumberStrings: false,
       dateStrings: false,
-      
+
       timezone: 'America/Mexico_City',
     }),
   }),
@@ -73,6 +74,8 @@ import Joi from 'joi';
 
     AuthModule,
 
+    MailServiceModule,
+
     BitacoraModule,
     EquiposModule,
     CatProductosModule,
@@ -82,6 +85,7 @@ import Joi from 'joi';
     S3Module,
     CatDepartamentosModule,
     ReportesModule],
+    
   controllers: [AppController],
   providers: [MailServiceService],
 })
